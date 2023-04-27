@@ -819,7 +819,6 @@ portal2/cfg/joy_preset_3_sc.cfg
 portal2/cfg/joy_preset_4.ps3.cfg
 portal2/cfg/chapter4.cfg
 portal2/cfg/playtest_off.ps3.cfg
-portal2/cfg/config.cfg
 portal2/cfg/undo360controller.cfg
 portal2/cfg/modsettings.cfg
 portal2/cfg/playtest.360.cfg
