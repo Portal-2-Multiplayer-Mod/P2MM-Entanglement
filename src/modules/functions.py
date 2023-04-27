@@ -37,8 +37,9 @@ def download_file(url, local_filename):
     return local_filename
 
 #* we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
-def downloadgoldberg():
+def downloadgoldberg(outputpath = "steam_api.dll"):
     page = requests.get("https://mr_goldberg.gitlab.io/goldberg_emulator/")
+    #* find the download link on the website
     for elm in str(page.content).split('href="'):
         if elm.startswith("https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/jobs/"):
             elm = elm.split('"')[0]
@@ -46,11 +47,13 @@ def downloadgoldberg():
     if os.path.exists("pydowntemp"):
         shutil.rmtree("pydowntemp")
     os.mkdir("pydowntemp")
+    #* download the file
     download_file(elm, "pydowntemp/goldberg.zip")
+    #* extract the file
     with zipfile.ZipFile("pydowntemp/goldberg.zip", 'r') as zip_ref:
         zip_ref.extractall("pydowntemp")
-    shutil.copy("pydowntemp/steam_api.dll", "steam_api.dll")
+    #* clean up
+    if os.path.exists("steam_api.dll"):
+        os.remove("steam_api.dll")
+    shutil.copy("pydowntemp/steam_api.dll", outputpath)
     shutil.rmtree("pydowntemp")
-
-if __name__ == "__main__":
-    downloadgoldberg()

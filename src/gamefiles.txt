@@ -184,7 +184,6 @@ portal2/pak01_007.vpk
 portal2/pak01_159.vpk
 portal2/stats.txt
 portal2/maplist.txt
-portal2/steam.inf
 portal2/pak01_038.vpk
 portal2/pak01_050.vpk
 portal2/pak01_059.vpk
@@ -1974,7 +1973,6 @@ portal2_dlc1/pak01_055.vpk
 portal2_dlc1/pak01_060.vpk
 portal2_dlc1/pak01_007.vpk
 portal2_dlc1/maplist.txt
-portal2_dlc1/steam.inf
 portal2_dlc1/pak01_038.vpk
 portal2_dlc1/pak01_050.vpk
 portal2_dlc1/pak01_059.vpk
@@ -2143,7 +2141,6 @@ portal2_dlc2/pak01_079.vpk
 portal2_dlc2/pak01_055.vpk
 portal2_dlc2/pak01_060.vpk
 portal2_dlc2/pak01_007.vpk
-portal2_dlc2/steam.inf
 portal2_dlc2/pak01_038.vpk
 portal2_dlc2/pak01_050.vpk
 portal2_dlc2/pak01_059.vpk
