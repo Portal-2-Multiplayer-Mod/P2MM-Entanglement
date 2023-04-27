@@ -22,7 +22,6 @@ def symlink(original, new):
         if os.path.isdir(original):
             for file in list_files_recursive(original):
                 puresymlink(original + file, new + file)
-                print('"' + new.replace(".builtserver/", "") + file + '",')
         else:
             os.symlink(original, new)
     else:
