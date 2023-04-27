@@ -287,13 +287,6 @@ portal2/materials/correction/cc_train.raw
 portal2/materials/correction/cc_train.vcc
 portal2/materials/correction/cc_finale4.raw
 portal2/materials/correction/cc_train2.raw
-portal2/save/76561198143198944/uwu.sav
-portal2/save/76561198143198944/autosave01.sav
-portal2/save/76561198143198944/autosave.sav
-portal2/save/76561198143198944/community_autosave01.sav
-portal2/save/76561198143198944/community_autosave.sav
-portal2/save/76561198143198944/autosavedangerous01.sav
-portal2/save/76561198143198944/steam_autocloud.vdf
 portal2/scripts/soundscapes_testchmb_portal.txt
 portal2/scripts/hud_textures.txt
 portal2/scripts/signifier_textures.txt
