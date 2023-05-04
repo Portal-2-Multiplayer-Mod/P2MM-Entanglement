@@ -113,5 +113,8 @@ if __name__ == "__main__":
     print("launched game hooking console lines")
     while True:
         for line in getnewconsolelines(bsdir + "portal2" + os.sep + "console.log"):
-            print(line)
+            if ("error" in line.lower()) or ("failed" in line.lower()) or ("Couldn't" in line) or ("Unable to load" in line) or ("not found" in line):
+                print("\u001b[31m" + line + "\u001b[0m")
+            else:
+                print(line)
         time.sleep(0.25)
