@@ -1,4 +1,8 @@
-import os, shutil, requests, zipfile
+import os, shutil, requests, zipfile, platform, subprocess
+
+def getsystem():
+    system = platform.system().lower()
+    return system
 
 def list_files_recursive(directory):
     files_list = []
@@ -11,7 +15,12 @@ def list_files_recursive(directory):
 def puresymlink(original, new):
     if not os.path.exists(os.path.dirname(new)):
         os.makedirs(os.path.dirname(new))
-    os.symlink(original, new)
+    if getsystem() == "linux":
+        os.symlink(original, new)
+    elif getsystem() == "windows":
+        fh = open("NUL","w")
+        subprocess.Popen('mklink /H "%s" "%s"' % (new, original), shell=True, stdout = fh, stderr = fh)
+        fh.close()
 
 def symlink(original, new):
     if os.path.exists(original):
@@ -23,7 +32,7 @@ def symlink(original, new):
             for file in list_files_recursive(original):
                 puresymlink(original + file, new + file)
         else:
-            os.symlink(original, new)
+            puresymlink(original, new)
     else:
         print("symlink failed", original)
 

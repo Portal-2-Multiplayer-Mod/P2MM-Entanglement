@@ -8,7 +8,7 @@ from modules.functions import *
 
 def buildserver(gamepath, outputpath):
     f = open("gamefiles.txt")
-    filelist = f.read().strip().split("\n")
+    filelist = f.read().strip().replace("/", os.sep).split("\n")
     f.close()
 
     #* create whatever paths need to exist

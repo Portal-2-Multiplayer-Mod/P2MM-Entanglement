@@ -459,9 +459,6 @@ portal2/scripts/vscripts/transitions/lightboard_startup_sequences.txt
 portal2/scripts/vscripts/transitions/sp_elevator_motifs.nut
 portal2/scripts/vscripts/laser_target/musical_laser_catcher.nut
 portal2/scripts/vscripts/laser_target/laser_target_activation_sounds.nut
-portal2/scripts/vscripts/datasystemsaves/datasystem-datacheck.nut
-portal2/scripts/vscripts/datasystemsaves/datasystem-setpassword.nut
-portal2/scripts/vscripts/datasystemsaves/datasystem-disabled.nut
 portal2/scripts/vscripts/button_door/sign.nut
 portal2/scripts/vscripts/button_door/button_target_large.nut
 portal2/scripts/vscripts/button_door/button_target.nut
