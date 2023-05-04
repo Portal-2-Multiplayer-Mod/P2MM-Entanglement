@@ -1,4 +1,7 @@
-
+/env
+/tests
+.vscode/
+/__pycache__
 src/.builtserver/
 *.pyc
 *.pyc
