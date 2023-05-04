@@ -6,3 +6,4 @@ src/.builtserver/
 *.pyc
 *.pyc
 src/goldberg.dll
+*.lock

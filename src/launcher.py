@@ -5,8 +5,7 @@ import multiprocessing
 import signal
 import sys
 import time
-import win32gui #pip install pywin32
-import psutil #pip isntall psutil
+import psutil #!pip isntall psutil
 from modules.builder import buildserver
 from modules.functions import getsystem
 
@@ -14,6 +13,7 @@ if getsystem() == "darwin":
     print("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
     exit()
 elif getsystem() == "windows":
+    import win32gui #!pip install pywin32
     gamepath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2\\"
 elif getsystem() == "linux":
     gamepath = os.path.expanduser("~/.steam/steam/steamapps/common/Portal 2/")
@@ -56,21 +56,30 @@ def launchgame(builtserverdir, args):
 
     # launch the game
     if getsystem() == "linux":
-        os.system("wine " + builtserverdir + "portal2.exe " + args)
+        process = subprocess.Popen('xvfb-run -a -s "-screen 0 1024x768x24" wine ' + builtserverdir + "portal2.exe " + args, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        createlockfile(process.pid)
+        def sigint_handler(signal, frame): #* remove lockfile on exit
+            print("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
+            print("destroying lockfile")
+            destroylockfile()
+            print("destroyed")
+            print("exiting")
+            sys.exit(0)
+        signal.signal(signal.SIGINT, sigint_handler)
     elif getsystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + args, shell=True)
         
         print("game running press CTRL+C to terminate")
 
-        def kill_game():
-            game = psutil.Process(process.pid)
+        def kill_game(pid):
+            game = psutil.Process(pid)
             for child in game.children():
                 child.kill()
 
         def sigint_handler(signal, frame):
             print("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
             print("closing game")
-            kill_game()
+            kill_game(process.pid)
             destroylockfile()
             print("closed")
             print("exiting")
@@ -117,4 +126,4 @@ if __name__ == "__main__":
                 print("\u001b[31m" + line + "\u001b[0m")
             else:
                 print(line)
-        time.sleep(0.25)
+        time.sleep(0.1)
