@@ -3,7 +3,7 @@
 #* PURPOSE: take a pre-existing portal 2 and strip it down into a dedicated
 #* server-like environment that run's headlessly and without a steam account
 
-import os, time, shutil
+import os, time, shutil, sys
 from modules.functions import *
 
 def buildserver(gamepath, outputpath):
@@ -33,7 +33,12 @@ def buildserver(gamepath, outputpath):
     #* download goldberg into the correct folder
     if not os.path.isfile("goldberg.dll"):
         print("downloading goldberg...")
-        downloadgoldberg("goldberg.dll")
+        try:
+            downloadgoldberg("goldberg.dll")
+        except:
+            print("failed to download goldberg! game will not start without a steam emulator")
+            print("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ open the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
+            sys.exit(0)
         print("downloaded goldberg")
     shutil.copy("goldberg.dll", outputpath + "bin/steam_api.dll")
     os.makedirs(outputpath + "bin/steam_settings")

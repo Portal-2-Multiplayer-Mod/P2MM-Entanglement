@@ -126,4 +126,4 @@ if __name__ == "__main__":
                 print("\u001b[31m" + line + "\u001b[0m")
             else:
                 print(line)
-        time.sleep(0.25)
+        time.sleep(0.1)
