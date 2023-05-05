@@ -22,6 +22,14 @@ def puresymlink(original, new):
         subprocess.Popen('mklink /H "%s" "%s"' % (new, original), shell=True, stdout = fh, stderr = fh)
         fh.close()
 
+def get_all_files(directory):
+    file_list = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_list.append(os.path.relpath(file_path, directory))
+    return file_list
+
 def symlink(original, new):
     if os.path.exists(original):
         if not os.path.exists(os.path.dirname(new)):

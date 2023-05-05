@@ -52,7 +52,7 @@ def handlelockfile(intentionalkill = False):
 
 def launchgame(builtserverdir, args):
     handlelockfile() # clean up any possible zombie instances
-    buildserver(gamepath, bsdir) # build the serverfiles
+    buildserver(gamepath, "modfiles/", bsdir) # build the serverfiles
 
     # launch the game
     if getsystem() == "linux":

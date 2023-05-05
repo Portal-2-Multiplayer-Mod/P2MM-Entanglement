@@ -6,7 +6,7 @@
 import os, time, shutil, sys
 from modules.functions import *
 
-def buildserver(gamepath, outputpath):
+def buildserver(gamepath, modfilespath, outputpath):
     f = open("gamefiles.txt")
     filelist = f.read().strip().replace("/", os.sep).split("\n")
     f.close()
@@ -24,7 +24,12 @@ def buildserver(gamepath, outputpath):
     print("symlinking server")
     oldtime = time.time()
     for fl in filelist:
-        symlink(gamepath + fl, outputpath + fl)
+        if not os.path.exists(modfilespath + fl):
+            symlink(gamepath + fl, outputpath + fl)
+    
+    #* tack on the modfiles
+    for fl in get_all_files(modfilespath):
+       symlink(os.path.abspath(modfilespath + fl), outputpath + fl) #! for some reason this doesn't work without the abspath on linux
     print("symlinking finished in: " + str(time.time() - oldtime) + " seconds!")
     
     #* for whatever reason steam_api.dll doesn't work with a symlinked steam.inf file so we need to copy it instead
