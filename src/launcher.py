@@ -19,7 +19,6 @@ elif getsystem() == "linux":
     gamepath = os.path.expanduser("~/.steam/steam/steamapps/common/Portal 2/")
 
 gamehidden = 0 # i have this varible outside of its respective function as the enumwindows fuction appears not to be able to handle global imports from local functions
-os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 bsdir = ".builtserver" + os.sep
 
@@ -33,9 +32,10 @@ def createlockfile(pid):
 def destroylockfile():
     os.remove("p2mm.lock")
 
-def handlelockfile():
+def handlelockfile(intentionalkill = False):
     if os.path.exists("p2mm.lock"):
-        print("found lock file possible zombie instance")
+        if not intentionalkill:
+            print("found lock file possible zombie instance")
         f = open("p2mm.lock", "r")
         pids = f.read().strip().split("\n")
         f.close()
@@ -116,6 +116,7 @@ def getnewconsolelines(confile):
     return [] #return nothing if blank
 
 if __name__ == "__main__":
+    os.chdir(os.path.abspath(os.path.dirname(__file__)))
     #* launch code below
     args = "+echo p2mm +mp_dev_wait_for_other_player 0 +map mp_coop_lobby_3 +developer 1 -textmode -novid -nosound -nojoy -noipx -nopreload -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count())
     launchgame(bsdir, args)
