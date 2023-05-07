@@ -1,5 +1,7 @@
 import os, shutil, requests, zipfile, platform, subprocess
 
+import urllib.request
+
 def getsystem():
     system = platform.system().lower()
     return system
@@ -54,22 +56,23 @@ def download_file(url, local_filename):
 
 #* we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
 def downloadgoldberg(outputpath = "steam_api.dll"):
-    page = requests.get("https://mr_goldberg.gitlab.io/goldberg_emulator/")
-    #* find the download link on the website
-    for elm in str(page.content).split('href="'):
-        if elm.startswith("https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/jobs/"):
-            elm = elm.split('"')[0]
-            break
-    if os.path.exists("pydowntemp"):
-        shutil.rmtree("pydowntemp")
-    os.mkdir("pydowntemp")
-    #* download the file
-    download_file(elm, "pydowntemp/goldberg.zip")
-    #* extract the file
-    with zipfile.ZipFile("pydowntemp/goldberg.zip", 'r') as zip_ref:
-        zip_ref.extractall("pydowntemp")
-    #* clean up
+    downloadfolder = "pydowntemp"
+    downloadPath = downloadfolder+"/goldberg.zip"
+    
+    if os.path.exists(downloadfolder):
+        shutil.rmtree(downloadfolder)
+        
+    os.mkdir(downloadfolder)
+    urllib.request.urlretrieve("https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/jobs/2987292050/artifacts/download?file_type=archive", downloadPath)
+    
+    if os.path.exists(downloadPath):
+        print("file exist")
+
+    with zipfile.ZipFile(downloadPath, 'r') as zip_ref:
+        zip_ref.extractall(downloadfolder)
+        
     if os.path.exists("steam_api.dll"):
         os.remove("steam_api.dll")
-    shutil.copy("pydowntemp/steam_api.dll", outputpath)
-    shutil.rmtree("pydowntemp")
+        
+    shutil.copy(downloadfolder+"/steam_api.dll", outputpath)
+    shutil.rmtree(downloadfolder)
