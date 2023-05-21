@@ -5,8 +5,18 @@
 
 import os, time, shutil, sys
 from modules.functions import *
+import math
 
-def buildserver(gamepath, modfilespath, outputpath):
+def convert_size(size_bytes): # cute little bytes size formatter
+   if size_bytes == 0:
+       return "0B"
+   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   i = int(math.floor(math.log(size_bytes, 1024)))
+   p = math.pow(1024, i)
+   s = round(size_bytes / p, 2)
+   return "%s %s" % (s, size_name[i])
+
+def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
     f = open("gamefiles.txt")
     filelist = f.read().strip().replace("/", os.sep).split("\n")
     f.close()
@@ -20,21 +30,35 @@ def buildserver(gamepath, modfilespath, outputpath):
         shutil.rmtree(outputpath)
     os.mkdir(outputpath)
 
+    sizetracker = 0
+
     #* assemble the base server
     print("symlinking server")
     oldtime = time.time()
     for fl in filelist:
-        if not os.path.exists(modfilespath + fl):
-            symlink(gamepath + fl, outputpath + fl)
-    
+        if fl.startswith("#"): # if its a comment just pass it
+            continue
+        if fl.startswith("!hc"): # do a hard copy if the bang is present
+            fl = fl.replace("!hc", "").strip()
+            if getsystem() == "linux":
+                if not os.path.exists(modfilespath + fl):
+                    symlink(gamepath + fl, outputpath + fl)
+            elif getsystem() == "windows": # we only need to hard copy on windows as linux can remove the symlinks fine when the game is running
+                if not os.path.exists(outputpath + os.path.dirname(fl)):
+                    os.makedirs(outputpath + os.path.dirname(fl))
+                if not os.path.exists(modfilespath + fl):
+                    sizetracker += os.path.getsize(gamepath + fl)
+                    shutil.copyfile(gamepath + fl, outputpath + fl)
+        else:
+            if not os.path.exists(modfilespath + fl):
+                symlink(gamepath + fl, outputpath + fl)
+
     #* tack on the modfiles
     for fl in get_all_files(modfilespath):
        symlink(os.path.abspath(modfilespath + fl), outputpath + fl) #! for some reason this doesn't work without the abspath on linux
+
     print("symlinking finished in: " + str(time.time() - oldtime) + " seconds!")
     
-    #* for whatever reason steam_api.dll doesn't work with a symlinked steam.inf file so we need to copy it instead
-    shutil.copy(gamepath + "portal2/steam.inf", outputpath + "portal2/steam.inf")
-
     #* download goldberg into the correct folder
     if not os.path.isfile("goldberg.dll"):
         print("downloading goldberg...")
@@ -45,8 +69,20 @@ def buildserver(gamepath, modfilespath, outputpath):
             print("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ open the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
             sys.exit(0)
         print("downloaded goldberg")
-    shutil.copy("goldberg.dll", outputpath + "bin/steam_api.dll")
+    shutil.copyfile("goldberg.dll", outputpath + "bin/steam_api.dll")
+    sizetracker += os.path.getsize("goldberg.dll")
+
     os.makedirs(outputpath + "bin/steam_settings")
     f = open(outputpath + "bin/steam_settings/force_account_name.txt", "w")
-    f.write("server")
+    f.write("Console") # NAME FOR SERVER ACCOUNT
     f.close()
+
+    f = open(outputpath + "bin/steam_settings/offline.txt", "w")
+    f.close()
+
+    f = open(outputpath + "bin/steam_settings/force_steamid.txt", "w")
+    f.write("69696969696969696") # NAME FOR SERVER ACCOUNT
+    f.close()
+    
+
+    print("Final Size: " + convert_size(sizetracker))

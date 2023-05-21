@@ -1,72 +1,79 @@
-portal2.exe
-steam_appid.txt
+# files to hard copy
+!hc portal2.exe
+!hc portal2/bin/matchmaking.dll
+!hc portal2/bin/client.dll
+!hc portal2/bin/server.dll
+!hc portal2/steam.inf
+!hc bin/binkw32.dll
+!hc bin/datacache.dll
+!hc bin/engine.dll
+!hc bin/filesystem_stdio.dll
+!hc bin/inputsystem.dll
+!hc bin/launcher.dll
+!hc bin/materialsystem.dll
+!hc bin/mss32.dll
+!hc bin/mssdolby.flt
+!hc bin/mssds3d.flt
+!hc bin/mssdsp.flt
+!hc bin/msseax.flt
+!hc bin/mssmp3.asi
+!hc bin/msssrs.flt
+!hc bin/mssvoice.asi
+!hc bin/shaderapidx9.dll
+!hc bin/soundemittersystem.dll
+!hc bin/stdshader_dbg.dll
+!hc bin/stdshader_dx9.dll
+!hc bin/studiorender.dll
+!hc bin/tier0.dll
+!hc bin/valve_avi.dll
+!hc bin/vaudio_miles.dll
+!hc bin/vgui2.dll
+!hc bin/vguimatsurface.dll
+!hc bin/vphysics.dll
+!hc bin/vscript.dll
+!hc bin/vstdlib.dll
+!hc bin/xinput1_3.dll
+!hc bin/localize.dll
+!hc steam_appid.txt
+!hc bin/scenefilecache.dll
+!hc bin/vaudio_speex.dll
+
+# files to symlink
 bin/steamclient.dll
-bin/soundemittersystem.dll
 bin/vrad.exe
 bin/shaderapivk.dll
-bin/inputsystem.dll
-bin/mssds3d.flt
-bin/tier0.dll
 bin/libcef.dll
-bin/materialsystem.dll
 bin/base.fgd
 bin/vrad_dll.dll
-bin/valve_avi.dll
-bin/mssdolby.flt
 bin/vbsp.exe
-bin/studiorender.dll
 bin/crashhandler.dll
 bin/vidcfg.bin
 bin/bugreporter_public.dll
 bin/portal.fgd
 bin/vtex_dll.dll
-bin/xinput1_3.dll
 bin/dxsupport.cfg
-bin/shaderapidx9.dll
 bin/halflife2.fgd
-bin/vphysics.dll
 bin/dxvk_d3d9.dll
-bin/mss32.dll
-bin/filesystem_stdio.dll
 bin/adminserver.dll
 bin/msvcr71.dll
 bin/shaderapiempty.dll
 bin/dxsupport_episodic.cfg
-bin/msseax.flt
 bin/tier0_s.dll
 bin/filesystemopendialog.dll
-bin/stdshader_dbg.dll
-bin/engine.dll
-bin/mssvoice.asi
 bin/unitlib.dll
 bin/vvis.exe
 bin/portal2.fgd
-bin/scenefilecache.dll
 bin/soundsystem.dll
 bin/texturecompile_dll.dll
-bin/launcher.dll
-bin/vguimatsurface.dll
 bin/serverplugin_empty.dll
 bin/bugreporter_filequeue.dll
 bin/bsppack.dll
-bin/datacache.dll
-bin/mssdsp.flt
-bin/localize.dll
-bin/mssmp3.asi
-bin/binkw32.dll
-bin/stdshader_dx9.dll
-bin/vaudio_miles.dll
-bin/vstdlib.dll
 bin/vstdlib_s.dll
-bin/msssrs.flt
 bin/dxsupport_mac.cfg
 bin/serverbrowser.dll
 bin/mdllib.dll
 bin/vvis_dll.dll
 bin/icudt42.dll
-bin/vgui2.dll
-bin/vaudio_speex.dll
-bin/vscript.dll
 bin/vrad_osx.dsym/contents/info.plist
 bin/vvis_osx.dsym/vvis_osx.dsym/contents/info.plist
 bin/vvis_osx.dsym/contents/info.plist
@@ -794,9 +801,6 @@ portal2/maps/soundcache/sp_a3_01.manifest
 portal2/maps/soundcache/_master.cache
 portal2/maps/soundcache/sp_a2_laser_vs_turret.manifest
 portal2/maps/soundcache/sp_a3_bomb_flings.manifest
-portal2/bin/matchmaking.dll
-portal2/bin/client.dll
-portal2/bin/server.dll
 portal2/cfg/joy_preset_2.cfg
 portal2/cfg/gpu_mem_level_ps3.ekv
 portal2/cfg/joy_preset_3.ps3.cfg

@@ -5,9 +5,12 @@ import multiprocessing
 import signal
 import sys
 import time
+import random
+import string
 import psutil #!pip isntall psutil
 from modules.builder import buildserver
 from modules.functions import getsystem
+random.seed(time.time())
 
 if getsystem() == "darwin": 
     print("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
@@ -47,12 +50,23 @@ def handlelockfile(intentionalkill = False):
                 except:
                     print("zombie instance already died")
         destroylockfile()
-            
 
+def randomword(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
 
-def launchgame(builtserverdir, args):
+rconpasswd = ""
+def launchgame(builtserverdir, rconpasswdlocal = "blank", args = "+hostname P2MM +sv_client_min_interp_ratio 0 +sv_client_max_interp_ratio 1000 +mp_dev_wait_for_other_player 0 +developer 1 +map mp_coop_lobby_3 -usercon -textmode -novid -nosound -nojoy -noipx -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count()) + " +port 3280"):
+    global rconpasswd
+    if rconpasswdlocal != "blank":
+        rconpasswd = rconpasswdlocal
+    else:
+        rconpasswd = randomword(8)
+
     handlelockfile() # clean up any possible zombie instances
+
     buildserver(gamepath, "modfiles/", bsdir) # build the serverfiles
+    args = "+rcon_password " + rconpasswd + " " + args
 
     # launch the game
     if getsystem() == "linux":
@@ -118,8 +132,7 @@ def getnewconsolelines(confile):
 if __name__ == "__main__":
     os.chdir(os.path.abspath(os.path.dirname(__file__)))
     #* launch code below
-    args = "+echo p2mm +mp_dev_wait_for_other_player 0 +map mp_coop_lobby_3 +developer 1 -textmode -novid -nosound -nojoy -noipx -nopreload -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count())
-    launchgame(bsdir, args)
+    launchgame(bsdir)
     print("launched game hooking console lines")
     while True:
         for line in getnewconsolelines(bsdir + "portal2" + os.sep + "console.log"):

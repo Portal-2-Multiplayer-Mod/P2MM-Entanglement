@@ -1,4 +1,18 @@
-import os, shutil, requests, zipfile, platform, subprocess
+import os, shutil, requests, zipfile, platform, subprocess, socket
+from rcon.source import Client
+
+hostname = socket.gethostname()
+local_ip = socket.gethostbyname(hostname)
+
+def sendrcon(cmd, password, port = 3280):
+    try:
+        print(password)
+        with Client(local_ip, port, passwd=password) as client:
+            response = client.run(cmd)
+        return response
+    except Exception as e:
+        print(e)
+        return ""
 
 import urllib.request
 
