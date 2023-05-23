@@ -7,13 +7,18 @@ import sys
 import time
 import random
 import string
+
 import psutil #!pip isntall psutil
 from modules.builder import buildserver
 from modules.functions import getsystem
+from modules.logging import log
+
 random.seed(time.time())
 
+gameisrunning = False
+
 if getsystem() == "darwin": 
-    print("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
+    log("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
     exit()
 elif getsystem() == "windows":
     import win32gui #!pip install pywin32
@@ -26,37 +31,41 @@ gamehidden = 0 # i have this varible outside of its respective function as the e
 bsdir = ".builtserver" + os.sep
 
 def createlockfile(pid):
-    f = open("p2mm.lock", "w")
+    global gameisrunning
+    f = open("p2mm.lock", "w", encoding="utf-8")
     game = psutil.Process(pid)
     for child in game.children():
         f.write(str(child.pid) + "\n")
     f.close()
+    gameisrunning = True
 
 def destroylockfile():
     os.remove("p2mm.lock")
 
 def handlelockfile(intentionalkill = False):
+    global gameisrunning
     if os.path.exists("p2mm.lock"):
         if not intentionalkill:
-            print("found lock file possible zombie instance")
-        f = open("p2mm.lock", "r")
+            log("found lock file possible zombie instance")
+        f = open("p2mm.lock", "r", encoding="utf-8")
         pids = f.read().strip().split("\n")
         f.close()
         for pid in pids:
                 try:
                     psutil.Process(int(pid)).kill()
                     psutil.Process(int(pid)).wait()
-                    print("cleaned up zombie instance")
+                    log("cleaned up zombie instance")
                 except:
-                    print("zombie instance already died")
+                    log("zombie instance already died")
         destroylockfile()
+        gameisrunning = False
 
 def randomword(length):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
 rconpasswd = ""
-def launchgame(builtserverdir, rconpasswdlocal = "blank", args = "+hostname P2MM +sv_client_min_interp_ratio 0 +sv_client_max_interp_ratio 1000 +mp_dev_wait_for_other_player 0 +developer 1 +map mp_coop_lobby_3 -usercon -textmode -novid -nosound -nojoy -noipx -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count()) + " +port 3280"):
+def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hostname P2MM +sv_client_min_interp_ratio 0 +sv_client_max_interp_ratio 1000 +mp_dev_wait_for_other_player 0 +developer 1 +map mp_coop_lobby_3 -usercon -textmode -novid -nosound -nojoy -noipx -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count()) + " +port 3280"):
     global rconpasswd
     if rconpasswdlocal != "blank":
         rconpasswd = rconpasswdlocal
@@ -66,39 +75,42 @@ def launchgame(builtserverdir, rconpasswdlocal = "blank", args = "+hostname P2MM
     handlelockfile() # clean up any possible zombie instances
 
     buildserver(gamepath, "modfiles/", bsdir) # build the serverfiles
-    args = "+rcon_password " + rconpasswd + " " + args
+    launchargs = "+rcon_password " + rconpasswd + " " + launchargs
 
     # launch the game
     if getsystem() == "linux":
-        process = subprocess.Popen('xvfb-run -a -s "-screen 0 1024x768x24" wine ' + builtserverdir + "portal2.exe " + args, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        process = subprocess.Popen('xvfb-run -a -s "-screen 0 1024x768x24" wine ' + builtserverdir + "portal2.exe " + launchargs, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         createlockfile(process.pid)
         def sigint_handler(signal, frame): #* remove lockfile on exit
-            print("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
-            print("destroying lockfile")
+            log("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
+            log("destroying lockfile")
             destroylockfile()
-            print("destroyed")
-            print("exiting")
+            log("destroyed")
+            log("exiting")
             sys.exit(0)
         signal.signal(signal.SIGINT, sigint_handler)
     elif getsystem() == "windows":
-        process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + args, shell=True)
+        process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
         
-        print("game running press CTRL+C to terminate")
+        log("game running press CTRL+C to terminate")
 
         def kill_game(pid):
             game = psutil.Process(pid)
             for child in game.children():
                 child.kill()
-
+        
         def sigint_handler(signal, frame):
-            print("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
-            print("closing game")
+            log("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
+            log("closing game")
             kill_game(process.pid)
             destroylockfile()
-            print("closed")
-            print("exiting")
+            log("closed")
+            log("exiting")
             sys.exit(0)
-        signal.signal(signal.SIGINT, sigint_handler)
+        try:
+            signal.signal(signal.SIGINT, sigint_handler)
+        except:
+            pass
 
         # hide the window after it opens
         def winEnumHandler( hwnd, ctx ):
@@ -109,17 +121,17 @@ def launchgame(builtserverdir, rconpasswdlocal = "blank", args = "+hostname P2MM
                         gamehidden += 1
 
         # if the window is not hidden itterate through all visable windows and try to hide it
-        print("waiting for windows to start so we can hide them")
+        log("waiting for windows to start so we can hide them")
         while (gamehidden < 3):
             output = win32gui.EnumWindows( winEnumHandler, None )
-        print("all windows hidden")
+        log("all windows hidden")
         createlockfile(process.pid) # once the game is fully up create a lockfile to deal with zombie instances
 
 curconsoleline = 0
 def getnewconsolelines(confile):
     global curconsoleline
     if os.path.isfile(confile):
-        f = open(confile, "r")
+        f = open(confile, "r", encoding="utf-8")
         consolelines = f.read().strip().split("\n")
         f.close()
         if len(consolelines) > curconsoleline:
@@ -133,11 +145,8 @@ if __name__ == "__main__":
     os.chdir(os.path.abspath(os.path.dirname(__file__)))
     #* launch code below
     launchgame(bsdir)
-    print("launched game hooking console lines")
+    log("launched game hooking console lines")
     while True:
         for line in getnewconsolelines(bsdir + "portal2" + os.sep + "console.log"):
-            if ("error" in line.lower()) or ("failed" in line.lower()) or ("Couldn't" in line) or ("Unable to load" in line) or ("not found" in line):
-                print("\u001b[31m" + line + "\u001b[0m")
-            else:
-                print(line)
+                log(line, "game")
         time.sleep(0.1)

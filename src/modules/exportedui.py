@@ -24,13 +24,9 @@ class Ui_MainWindow(object):
         self.tab.setObjectName("tab")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.tab)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.console_output = QtWidgets.QScrollArea(self.tab)
-        self.console_output.setWidgetResizable(True)
+        self.console_output = QtWidgets.QTextEdit(self.tab)
+        self.console_output.setReadOnly(True)
         self.console_output.setObjectName("console_output")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 556, 376))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.console_output.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_2.addWidget(self.console_output)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -59,7 +55,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Form"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "P2MM Launcher"))
+        self.console_output.setPlaceholderText(_translate("MainWindow", "CONSOLE"))
         self.command_line.setPlaceholderText(_translate("MainWindow", "Console Command"))
         self.send_button.setText(_translate("MainWindow", "Send"))
         self.start_button.setText(_translate("MainWindow", "Start"))

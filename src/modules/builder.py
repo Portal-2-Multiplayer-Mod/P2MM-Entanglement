@@ -6,6 +6,7 @@
 import os, time, shutil, sys
 from modules.functions import *
 import math
+from modules.logging import log
 
 def convert_size(size_bytes): # cute little bytes size formatter
    if size_bytes == 0:
@@ -23,7 +24,7 @@ def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
 
     #* create whatever paths need to exist
     if not os.path.exists(gamepath):
-        print("path doesn't exist")
+        log("path doesn't exist")
         exit()
 
     if os.path.exists(outputpath):
@@ -33,7 +34,7 @@ def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
     sizetracker = 0
 
     #* assemble the base server
-    print("symlinking server")
+    log("symlinking server")
     oldtime = time.time()
     for fl in filelist:
         if fl.startswith("#"): # if its a comment just pass it
@@ -57,32 +58,32 @@ def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
     for fl in get_all_files(modfilespath):
        symlink(os.path.abspath(modfilespath + fl), outputpath + fl) #! for some reason this doesn't work without the abspath on linux
 
-    print("symlinking finished in: " + str(time.time() - oldtime) + " seconds!")
+    log("symlinking finished in: " + str(time.time() - oldtime) + " seconds!")
     
     #* download goldberg into the correct folder
     if not os.path.isfile("goldberg.dll"):
-        print("downloading goldberg...")
+        log("downloading goldberg...")
         try:
             downloadgoldberg("goldberg.dll")
         except:
-            print("failed to download goldberg! game will not start without a steam emulator")
-            print("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ open the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
+            log("failed to download goldberg! game will not start without a steam emulator")
+            log("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ open the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
             sys.exit(0)
-        print("downloaded goldberg")
+        log("downloaded goldberg")
     shutil.copyfile("goldberg.dll", outputpath + "bin/steam_api.dll")
     sizetracker += os.path.getsize("goldberg.dll")
 
     os.makedirs(outputpath + "bin/steam_settings")
-    f = open(outputpath + "bin/steam_settings/force_account_name.txt", "w")
+    f = open(outputpath + "bin/steam_settings/force_account_name.txt", "w", encoding="utf-8")
     f.write("Console") # NAME FOR SERVER ACCOUNT
     f.close()
 
-    f = open(outputpath + "bin/steam_settings/offline.txt", "w")
+    f = open(outputpath + "bin/steam_settings/offline.txt", "w", encoding="utf-8")
     f.close()
 
-    f = open(outputpath + "bin/steam_settings/force_steamid.txt", "w")
+    f = open(outputpath + "bin/steam_settings/force_steamid.txt", "w", encoding="utf-8")
     f.write("69696969696969696") # NAME FOR SERVER ACCOUNT
     f.close()
     
 
-    print("Final Size: " + convert_size(sizetracker))
+    log("Final Size: " + convert_size(sizetracker))

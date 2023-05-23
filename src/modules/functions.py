@@ -1,17 +1,31 @@
-import os, shutil, requests, zipfile, platform, subprocess, socket
+import os, shutil, requests, zipfile, platform, subprocess, socket, string, random
 from rcon.source import Client
+from modules.logging import log
+
+def randomword(length):
+   letters = string.ascii_lowercase
+   return ''.join(random.choice(letters) for i in range(length))
+
+rconpasswd = randomword(6)
 
 hostname = socket.gethostname()
 local_ip = socket.gethostbyname(hostname)
 
-def sendrcon(cmd, password, port = 3280):
+userrconhist = []
+rconhist = []
+def sendrcon(cmd, password, port = 3280, hist = False):
+    if hist:
+        userrconhist.reverse()
+        userrconhist.append(cmd)
+        userrconhist.reverse()
+    else:
+        rconhist.append(cmd)
     try:
-        print(password)
         with Client(local_ip, port, passwd=password) as client:
             response = client.run(cmd)
         return response
     except Exception as e:
-        print(e)
+        log(e)
         return ""
 
 import urllib.request
@@ -58,7 +72,7 @@ def symlink(original, new):
         else:
             puresymlink(original, new)
     else:
-        print("symlink failed", original)
+        log("symlink failed", original)
 
 def download_file(url, local_filename):
     with requests.get(url, stream=True) as r:
@@ -80,7 +94,7 @@ def downloadgoldberg(outputpath = "steam_api.dll"):
     urllib.request.urlretrieve("https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/jobs/2987292050/artifacts/download?file_type=archive", downloadPath)
     
     if os.path.exists(downloadPath):
-        print("file exist")
+        log("file exist")
 
     with zipfile.ZipFile(downloadPath, 'r') as zip_ref:
         zip_ref.extractall(downloadfolder)

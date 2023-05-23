@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>P2MM Launcher</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -31,20 +31,13 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QScrollArea" name="console_output">
-         <property name="widgetResizable">
+        <widget class="QTextEdit" name="console_output">
+         <property name="readOnly">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>556</width>
-            <height>376</height>
-           </rect>
-          </property>
-         </widget>
+         <property name="placeholderText">
+          <string>CONSOLE</string>
+         </property>
         </widget>
        </item>
        <item>
