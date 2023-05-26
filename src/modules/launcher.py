@@ -24,7 +24,7 @@ elif getsystem() == "windows":
     import win32gui #!pip install pywin32
     gamepath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2\\"
 elif getsystem() == "linux":
-    gamepath = os.path.expanduser("~/.steam/steam/steamapps/common/Portal 2/")
+    gamepath = os.path.expanduser("~/.local/share/Steam/steamapps/common/Portal 2/")
 
 gamehidden = 0 # i have this varible outside of its respective function as the enumwindows fuction appears not to be able to handle global imports from local functions
 
@@ -40,7 +40,8 @@ def createlockfile(pid):
     gameisrunning = True
 
 def destroylockfile():
-    os.remove("p2mm.lock")
+    if os.path.exists("p2mm.lock"):
+        os.remove("p2mm.lock")
 
 def handlelockfile(intentionalkill = False):
     global gameisrunning
@@ -75,20 +76,15 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
     handlelockfile() # clean up any possible zombie instances
 
     buildserver(gamepath, "modfiles/", bsdir) # build the serverfiles
+    log("buildserver routine finished!")
     launchargs = "+rcon_password " + rconpasswd + " " + launchargs
 
     # launch the game
     if getsystem() == "linux":
+        log("Running In linux mode!")
         process = subprocess.Popen('xvfb-run -a -s "-screen 0 1024x768x24" wine ' + builtserverdir + "portal2.exe " + launchargs, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         createlockfile(process.pid)
-        def sigint_handler(signal, frame): #* remove lockfile on exit
-            log("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
-            log("destroying lockfile")
-            destroylockfile()
-            log("destroyed")
-            log("exiting")
-            sys.exit(0)
-        signal.signal(signal.SIGINT, sigint_handler)
+        log("Game Died!!")
     elif getsystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
         

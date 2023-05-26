@@ -1,0 +1,12 @@
+primary: found lock file possible zombie instance
+primary: zombie instance already died
+primary: symlinking server
+/home/kyle/.local/share/Steam/steamapps/common/Portal 2/portal2/scripts/vscripts/datasystemsaves/datasystem-datacheck.nut: symlink failed
+/home/kyle/.local/share/Steam/steamapps/common/Portal 2/portal2/scripts/vscripts/datasystemsaves/datasystem-setpassword.nut: symlink failed
+/home/kyle/.local/share/Steam/steamapps/common/Portal 2/portal2/scripts/vscripts/datasystemsaves/datasystem-disabled.nut: symlink failed
+/home/kyle/.local/share/Steam/steamapps/common/Portal 2/platform/config/InGameDialogConfig.vdf: symlink failed
+primary: symlinking finished in: 0.691493034362793 seconds!
+primary: Final Size: 1.08 MB
+primary: buildserver routine finished!
+primary: Running In linux mode!
+primary: Game Died!!

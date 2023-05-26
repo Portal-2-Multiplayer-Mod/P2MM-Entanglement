@@ -91,7 +91,7 @@ def downloadgoldberg(outputpath = "steam_api.dll"):
         shutil.rmtree(downloadfolder)
         
     os.mkdir(downloadfolder)
-    urllib.request.urlretrieve("https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/jobs/2987292050/artifacts/download?file_type=archive", downloadPath)
+    urllib.request.urlretrieve("https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/2524331e488ec6399c396cf48bbe9903/Goldberg_Lan_Steam_Emu_v0.2.5.zip", downloadPath)
     
     if os.path.exists(downloadPath):
         log("file exist")
