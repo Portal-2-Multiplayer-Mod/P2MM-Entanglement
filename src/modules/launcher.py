@@ -89,6 +89,19 @@ class RconTestThread(threading.Thread):
             except:
                 RconReady = False
 
+class WindowHideThread(threading.Thread): 
+    def run(self):
+        global gameisrunning
+        def winEnumHandler( hwnd, ctx ):
+            if win32gui.IsWindowVisible( hwnd ):
+                    if ".builtserver" in win32gui.GetWindowText( hwnd ):
+                        win32gui.ShowWindow(hwnd, False) # hide the window
+        while not gameisrunning: time.sleep(0.1)
+        log("game running trying to hide windows")
+        while (gameisrunning):
+            output = win32gui.EnumWindows( winEnumHandler, None )
+            time.sleep(0.1)
+
 rconpasswd = ""
 rconport = 3280
 def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hostname P2MM +sv_client_min_interp_ratio 0 +sv_client_max_interp_ratio 1000 +mp_dev_wait_for_other_player 0 +developer 1 +map mp_coop_lobby_3 -usercon -textmode -novid -nosound -nojoy -noipx -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count()) + " +port 3280"):
@@ -136,17 +149,14 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
             pass
 
         # hide the window after it opens
-        def winEnumHandler( hwnd, ctx ):
-            global gamehidden
-            if win32gui.IsWindowVisible( hwnd ):
-                    if ".builtserver" in win32gui.GetWindowText( hwnd ):
-                        win32gui.ShowWindow(hwnd, False) # hide the window
-                        gamehidden += 1
+        
 
         # if the window is not hidden itterate through all visable windows and try to hide it
         log("waiting for game to start so we can hide and lock it")
-        while (gamehidden < 3):
-            output = win32gui.EnumWindows( winEnumHandler, None )
+        
+        windowhidethread = WindowHideThread()
+        windowhidethread.daemon = True
+        windowhidethread.start()
 
         while not os.path.isfile(confilepath): time.sleep(0.1)
 
