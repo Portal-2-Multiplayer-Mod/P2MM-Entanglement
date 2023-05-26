@@ -34,26 +34,31 @@ class NewlineThread(threading.Thread):
             is_at_bottom = False
             for line in newlines:
                 ui.console_output.append(line)
-                sleep(0.08)
+                sleep(0.05)
                 is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 30
                 if is_at_bottom:
                     scrollbar.setValue(scrollbar.maximum())
 
-            sleep(0.05) # we need to have a delay or else it fills up the loggers function calls
+            sleep(0.02) # we need to have a delay or else it fills up the loggers function calls
 
 class LaunchThread(threading.Thread):         
     def run(self):
         # target function of the thread class
         launcher.launchgame(rconpasswdlocal=functions.rconpasswd)
-        print("done")
+        ui.start_button.setText("Stop")
+        ui.start_button.setEnabled(True)
+        ui.start_button.clicked.connect(stop_game)
 
 launcherthread = None
 
 def stop_game():
     global launcherthread
+    ui.start_button.setText("Stopping...")
+    ui.start_button.setEnabled(False)
     launcher.handlelockfile()
-    sys.exit(0)
+    ui.start_button.setEnabled(True)
     ui.start_button.setText("Start")
+    ui.start_button.clicked.disconnect(stop_game)
     ui.start_button.clicked.connect(launch_game)
 
 def launch_game():
@@ -61,19 +66,24 @@ def launch_game():
     launcherthread = LaunchThread()
     launcherthread.daemon = True
     launcherthread.start()
-    ui.start_button.setText("Stop")
+    ui.console_output.setText("")
+    ui.start_button.setText("Game Is Starting...")
+    ui.start_button.setEnabled(False)
+    ui.start_button.clicked.disconnect(launch_game)
     ui.start_button.clicked.connect(stop_game)
 
 commandlistpos = -1
 def send_rcon():
     global commandlistpos
-    if launcher.gameisrunning:
+    if launcher.gameisrunning and launcher.RconReady:
         text = ui.command_line.text()
         output = functions.sendrcon(text, functions.rconpasswd, hist=True)
         ui.command_line.setText("")
         commandlistpos = -1
         if len(output.strip()) > 0:
             log(output.strip(), "rcon")
+    elif launcher.gameisrunning:
+        log("user attempted to send command before rcon was ready")
     else:
         log("user attempted to send command while game is closed")
 

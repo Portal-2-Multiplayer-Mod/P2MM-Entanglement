@@ -1,3 +1,4 @@
+from collections.abc import Callable, Iterable, Mapping
 import os
 import platform
 import subprocess
@@ -7,15 +8,19 @@ import sys
 import time
 import random
 import string
+import threading
+from typing import Any
 
 import psutil #!pip isntall psutil
 from modules.builder import buildserver
 from modules.functions import getsystem
+import modules.functions as functions
 from modules.logging import log
 
 random.seed(time.time())
 
 gameisrunning = False
+RconReady = False
 
 if getsystem() == "darwin": 
     log("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
@@ -45,6 +50,8 @@ def destroylockfile():
 
 def handlelockfile(intentionalkill = False):
     global gameisrunning
+    global RconReady
+
     if os.path.exists("p2mm.lock"):
         if not intentionalkill:
             log("found lock file possible zombie instance")
@@ -59,15 +66,38 @@ def handlelockfile(intentionalkill = False):
                 except:
                     log("zombie instance already died")
         destroylockfile()
-        gameisrunning = False
+    gameisrunning = False
+    RconReady = False
 
 def randomword(length):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
+class RconTestThread(threading.Thread):     
+    def run(self):
+        global gameisrunning
+        global RconReady
+        global rconpasswd, rconport
+        shouldrun = True
+        while shouldrun and gameisrunning:
+            try:
+                print("testing rcon")
+                output = functions.sendrcon('script printl("ready")', rconpasswd, rconport)
+                if output.strip() == "ready":
+                    print("READY")
+                    print("rcon passed!!!!!!!!!!!!!!")
+                    RconReady = True
+                    shouldrun = False
+            except:
+                print("rcon failed")
+                RconReady = False
+
 rconpasswd = ""
+rconport = 3280
 def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hostname P2MM +sv_client_min_interp_ratio 0 +sv_client_max_interp_ratio 1000 +mp_dev_wait_for_other_player 0 +developer 1 +map mp_coop_lobby_3 -usercon -textmode -novid -nosound -nojoy -noipx -norebuildaudio -condebug -refresh 30 -allowspectators -threads " + str(multiprocessing.cpu_count()) + " +port 3280"):
     global rconpasswd
+    global RconReady
+    RconReady = False
     if rconpasswdlocal != "blank":
         rconpasswd = rconpasswdlocal
     else:
@@ -122,6 +152,11 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
             output = win32gui.EnumWindows( winEnumHandler, None )
         log("all windows hidden")
         createlockfile(process.pid) # once the game is fully up create a lockfile to deal with zombie instances
+
+        rcontestthread = RconTestThread()
+        rcontestthread.daemon = True
+        rcontestthread.start()
+    return process
 
 curconsoleline = 0
 def getnewconsolelines(confile):
