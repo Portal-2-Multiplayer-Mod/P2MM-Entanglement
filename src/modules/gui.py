@@ -43,18 +43,26 @@ class NewlineThread(threading.Thread):
 
 class LaunchThread(threading.Thread):         
     def run(self):
+        global heldproc
         # target function of the thread class
-        launcher.launchgame(rconpasswdlocal=functions.rconpasswd)
+        heldproc = launcher.launchgame(rconpasswdlocal=functions.rconpasswd)
         ui.start_button.setText("Stop")
         ui.start_button.setEnabled(True)
         ui.start_button.clicked.connect(stop_game)
 
 launcherthread = None
 
+heldproc = None
+
 def stop_game():
     global launcherthread
+    global heldproc
     ui.start_button.setText("Stopping...")
     ui.start_button.setEnabled(False)
+    try:
+        heldproc.terminate()
+    except:
+        pass
     launcher.handlelockfile()
     ui.start_button.setEnabled(True)
     ui.start_button.setText("Start")

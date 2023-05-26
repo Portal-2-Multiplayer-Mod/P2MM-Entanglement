@@ -81,15 +81,12 @@ class RconTestThread(threading.Thread):
         shouldrun = True
         while shouldrun and gameisrunning:
             try:
-                print("testing rcon")
                 output = functions.sendrcon('script printl("ready")', rconpasswd, rconport)
                 if output.strip() == "ready":
-                    print("READY")
-                    print("rcon passed!!!!!!!!!!!!!!")
+                    log("rcon ready")
                     RconReady = True
                     shouldrun = False
             except:
-                print("rcon failed")
                 RconReady = False
 
 rconpasswd = ""
