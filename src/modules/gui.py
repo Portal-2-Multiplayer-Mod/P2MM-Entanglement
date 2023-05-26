@@ -29,7 +29,7 @@ class NewlineThread(threading.Thread):
             newlines = output[0]
 
             # jankily append console newlines to newlines
-            for line in launcher.getnewconsolelines(launcher.bsdir + "portal2" + os.sep + "console.log"): newlines.append(line)
+            for line in launcher.getnewconsolelines(launcher.confilepath): newlines.append(line)
             
             is_at_bottom = False
             for line in newlines:

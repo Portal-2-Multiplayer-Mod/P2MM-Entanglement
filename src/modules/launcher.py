@@ -144,17 +144,21 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
                         gamehidden += 1
 
         # if the window is not hidden itterate through all visable windows and try to hide it
-        log("waiting for windows to start so we can hide them")
+        log("waiting for game to start so we can hide and lock it")
         while (gamehidden < 3):
             output = win32gui.EnumWindows( winEnumHandler, None )
-        log("all windows hidden")
+
+        while not os.path.isfile(confilepath): time.sleep(0.1)
+
         createlockfile(process.pid) # once the game is fully up create a lockfile to deal with zombie instances
+        log("all windows hidden and game locked")
 
         rcontestthread = RconTestThread()
         rcontestthread.daemon = True
         rcontestthread.start()
     return process
 
+confilepath = bsdir + "portal2" + os.sep + "console.log"
 curconsoleline = 0
 def getnewconsolelines(confile):
     global curconsoleline
