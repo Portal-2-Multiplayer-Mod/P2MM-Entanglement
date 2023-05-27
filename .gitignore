@@ -9,3 +9,4 @@ src/goldberg.dll
 *.lock
 p2mm.log
 src/p2mmwinepfx
+src/modfiles/p2mm.dll
