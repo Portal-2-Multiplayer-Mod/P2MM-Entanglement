@@ -8,3 +8,4 @@ src/.builtserver/
 src/goldberg.dll
 *.lock
 p2mm.log
+src/p2mmwinepfx

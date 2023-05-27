@@ -122,9 +122,22 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
     # launch the game
     if getsystem() == "linux":
         log("Running In linux mode!")
-        process = subprocess.Popen('xvfb-run -a -s "-screen 0 1024x768x24" wine ' + builtserverdir + "portal2.exe " + launchargs, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        def create_wine_prefix(folder_path):
+            # Check if the folder already exists
+            if os.path.exists(folder_path):
+                print("The Wine prefix folder already exists.")
+            else:
+                try:
+                    # Create the folder
+                    os.makedirs(folder_path)
+                    print("Wine prefix folder created successfully.")
+                except OSError:
+                    print("Failed to create Wine prefix folder.")
+
+        create_wine_prefix("p2mmwinepfx")
+        os.environ["WINEPREFIX"] = os.path.abspath("p2mmwinepfx")
+        process = subprocess.Popen('wine ' + builtserverdir + 'portal2.exe ' + launchargs, shell=True) # stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         createlockfile(process.pid)
-        log("Game Died!!")
     elif getsystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
         
