@@ -10,3 +10,4 @@ src/goldberg.dll
 p2mm.log
 src/p2mmwinepfx
 src/modfiles/p2mm.dll
+*.dll
