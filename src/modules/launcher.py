@@ -22,7 +22,7 @@ random.seed(time.time())
 gameisrunning = False
 RconReady = False
 
-if getsystem() == "darwin": 
+if getsystem() == "darwin":
     log("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
     exit()
 elif getsystem() == "windows":
@@ -46,7 +46,10 @@ def createlockfile(pid):
 
 def destroylockfile():
     if os.path.exists("p2mm.lock"):
-        os.remove("p2mm.lock")
+        try:
+            os.remove("p2mm.lock")
+        except Exception as e:
+            log(e)
 
 def handlelockfile(intentionalkill = False):
     global gameisrunning
@@ -136,11 +139,13 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
 
         create_wine_prefix("p2mmwinepfx")
         os.environ["WINEPREFIX"] = os.path.abspath("p2mmwinepfx")
-        process = subprocess.Popen('wine ' + builtserverdir + 'portal2.exe ' + launchargs, shell=True) # stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        log('wine "' + builtserverdir + 'portal2.exe" ' + launchargs)
+        process = subprocess.Popen('wine "' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True) # stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         createlockfile(process.pid)
+        while not os.path.isfile(confilepath): time.sleep(0.1)
     elif getsystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
-        
+
         log("game running press CTRL+C to terminate")
 
         def kill_game(pid):
@@ -176,9 +181,9 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
         createlockfile(process.pid) # once the game is fully up create a lockfile to deal with zombie instances
         log("all windows hidden and game locked")
 
-        rcontestthread = RconTestThread()
-        rcontestthread.daemon = True
-        rcontestthread.start()
+    rcontestthread = RconTestThread()
+    rcontestthread.daemon = True
+    rcontestthread.start()
     return process
 
 confilepath = bsdir + "portal2" + os.sep + "console.log"

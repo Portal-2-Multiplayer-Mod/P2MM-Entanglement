@@ -21,7 +21,7 @@ class NewlineThread(threading.Thread):
         global ui
         if os.path.exists(launcher.bsdir + "portal2" + os.sep + "console.log"):
             os.remove(launcher.bsdir + "portal2" + os.sep + "console.log")
-        
+
         scrollbar = ui.console_output.verticalScrollBar()
         while True:
             output = getnewlines(self.curgloballine)
@@ -29,8 +29,11 @@ class NewlineThread(threading.Thread):
             newlines = output[0]
 
             # jankily append console newlines to newlines
-            for line in launcher.getnewconsolelines(launcher.confilepath): newlines.append(line)
-            
+            try:
+                for line in launcher.getnewconsolelines(launcher.confilepath): newlines.append(line)
+            except:
+                pass
+
             is_at_bottom = False
             for line in newlines:
                 ui.console_output.append(line)
@@ -63,7 +66,7 @@ def stop_game():
         heldproc.terminate()
     except:
         pass
-    launcher.handlelockfile()
+    launcher.handlelockfile(True)
     ui.start_button.setEnabled(True)
     ui.start_button.setText("Start")
     ui.start_button.clicked.disconnect(stop_game)
@@ -82,6 +85,7 @@ def launch_game():
 
 commandlistpos = -1
 def send_rcon():
+    print(functions.rconpasswd)
     global commandlistpos
     if launcher.gameisrunning and launcher.RconReady:
         text = ui.command_line.text()
@@ -145,7 +149,6 @@ def gui_main():
     ui.start_button.clicked.connect(launch_game)
 
     ###
-
     MainWindow.show()
     app.exec_()
     terminate()

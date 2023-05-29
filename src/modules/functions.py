@@ -25,7 +25,6 @@ def sendrcon(cmd, password, port = 3280, hist = False):
             response = client.run(cmd)
         return response
     except Exception as e:
-        log(e)
         return ""
 
 import urllib.request
@@ -64,7 +63,7 @@ def symlink(original, new):
     if os.path.exists(original):
         if not os.path.exists(os.path.dirname(new)):
             os.makedirs(os.path.dirname(new))
-        
+
         #* if its a directory itterate through it and sylink every file
         if os.path.isdir(original):
             for file in list_files_recursive(original):
