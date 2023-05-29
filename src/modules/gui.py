@@ -38,7 +38,7 @@ class NewlineThread(threading.Thread):
             for line in newlines:
                 ui.console_output.append(line)
                 sleep(0.05)
-                is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 30
+                is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 40
                 if is_at_bottom:
                     scrollbar.setValue(scrollbar.maximum())
 
@@ -51,7 +51,6 @@ class LaunchThread(threading.Thread):
         heldproc = launcher.launchgame(rconpasswdlocal=functions.rconpasswd)
         ui.start_button.setText("Stop")
         ui.start_button.setEnabled(True)
-        ui.start_button.clicked.connect(stop_game)
 
 launcherthread = None
 
@@ -62,15 +61,15 @@ def stop_game():
     global heldproc
     ui.start_button.setText("Stopping...")
     ui.start_button.setEnabled(False)
-    try:
-        heldproc.terminate()
-    except:
-        pass
+    # try:
+    #     heldproc.terminate()
+    # except:
+    #     pass
     launcher.handlelockfile(True)
-    ui.start_button.setEnabled(True)
     ui.start_button.setText("Start")
     ui.start_button.clicked.disconnect(stop_game)
     ui.start_button.clicked.connect(launch_game)
+    ui.start_button.setEnabled(True)
 
 def launch_game():
     global launcherthread

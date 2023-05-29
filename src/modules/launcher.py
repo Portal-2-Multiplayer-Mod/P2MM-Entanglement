@@ -39,6 +39,7 @@ def createlockfile(pid):
     global gameisrunning
     f = open("p2mm.lock", "w", encoding="utf-8")
     game = psutil.Process(pid)
+    f.write(str(pid) + "\n")
     for child in game.children():
         f.write(str(child.pid) + "\n")
     f.close()
@@ -139,10 +140,10 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
 
         create_wine_prefix("p2mmwinepfx")
         os.environ["WINEPREFIX"] = os.path.abspath("p2mmwinepfx")
-        log('wine "' + builtserverdir + 'portal2.exe" ' + launchargs)
-        process = subprocess.Popen('wine "' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True) # stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-        createlockfile(process.pid)
+        process = subprocess.Popen('wine "' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
         while not os.path.isfile(confilepath): time.sleep(0.1)
+        log(str(process.pid) + "=============================")
+        createlockfile(process.pid)
     elif getsystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
 
@@ -208,5 +209,5 @@ if __name__ == "__main__":
     log("launched game hooking console lines")
     while True:
         for line in getnewconsolelines(bsdir + "portal2" + os.sep + "console.log"):
-                log(line, "game")
+            log(line, "game")
         time.sleep(0.1)
