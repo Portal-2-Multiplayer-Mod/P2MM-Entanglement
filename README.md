@@ -1,5 +1,5 @@
 ## Welcome to P2MM Renewed! Where chaos reigns supreme and logic goes to die! 
-![P2MM Renewed Banner](https://cdn.discordapp.com/attachments/839766490231078943/1112868597879013507/RenewedBanner.png)
+![P2MM Renewed Banner](https://cdn.discordapp.com/attachments/839766490231078943/1112877029042434058/RenewedBanner.png)
 
 ## GOALS
 - Allow up to 32 players to join a singular game.
