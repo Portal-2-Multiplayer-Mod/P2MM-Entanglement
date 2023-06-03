@@ -29,22 +29,32 @@ class NewlineThread(threading.Thread):
             newlines = output[0]
 
             # jankily append console newlines to newlines
-            try:
+            if launcher.gameisrunning:
                 for line in launcher.getnewconsolelines(launcher.confilepath): newlines.append(line)
-            except:
-                pass
+
 
             is_at_bottom = False
-            for line in newlines:
-                ui.console_output.append(line)
-                sleep(0.05)
-                is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 40
+
+            if len(newlines) > 0:
+                is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 60
+                if ui.console_output.toPlainText() == "":
+                    ui.console_output.insertPlainText("\n".join(newlines))
+                else:
+                    ui.console_output.insertPlainText("\n" + "\n".join(newlines))
                 if is_at_bottom:
+                    sleep(0.01)
                     scrollbar.setValue(scrollbar.maximum())
 
-            sleep(0.02) # we need to have a delay or else it fills up the loggers function calls
+            # for line in newlines:
+            #     ui.console_output.append(line)
+            #     sleep(0.05)
+            #     is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 40
+            #     if is_at_bottom:
+            #         scrollbar.setValue(scrollbar.maximum())
 
-class LaunchThread(threading.Thread):         
+            sleep(0.1) # we need to have a delay or else it fills up the loggers function calls
+
+class LaunchThread(threading.Thread):
     def run(self):
         global heldproc
         # target function of the thread class
@@ -77,6 +87,7 @@ def launch_game():
     launcherthread.daemon = True
     launcherthread.start()
     ui.console_output.setText("")
+    launcher.curconsoleline = 0
     ui.start_button.setText("Game Is Starting...")
     ui.start_button.setEnabled(False)
     ui.start_button.clicked.disconnect(launch_game)
@@ -110,7 +121,7 @@ def gui_main():
     newlinethread = NewlineThread()
     newlinethread.daemon = True
     newlinethread.start()
-    
+
     ### UI LINKING
 
     def handle_key_press(event): # cycle previous commands when arrows are pressed
@@ -119,7 +130,7 @@ def gui_main():
             if len(functions.userrconhist) == 0:
                 commandlistpos = -1
                 return
-            
+
             commandlistpos += 1
             if commandlistpos > len(functions.userrconhist) - 1:
                 commandlistpos = len(functions.userrconhist) - 1
@@ -129,13 +140,13 @@ def gui_main():
             if len(functions.userrconhist) == 0:
                 commandlistpos = -1
                 return
-            
+
             commandlistpos -= 1
             if commandlistpos < 0:
                 ui.command_line.setText("")
                 commandlistpos = -1
                 return
-            
+
             ui.command_line.setText(functions.userrconhist[commandlistpos])
         else:
             # allow the widget to process other key events normally

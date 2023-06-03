@@ -77,7 +77,7 @@ def randomword(length):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
-class RconTestThread(threading.Thread):     
+class RconTestThread(threading.Thread):
     def run(self):
         global gameisrunning
         global RconReady
@@ -93,7 +93,7 @@ class RconTestThread(threading.Thread):
             except:
                 RconReady = False
 
-class WindowHideThread(threading.Thread): 
+class WindowHideThread(threading.Thread):
     def run(self):
         global gameisrunning
         def winEnumHandler( hwnd, ctx ):
@@ -153,7 +153,7 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
             game = psutil.Process(pid)
             for child in game.children():
                 child.kill()
-        
+
         def sigint_handler(signal, frame):
             log("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
             log("closing game")
@@ -168,11 +168,11 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
             pass
 
         # hide the window after it opens
-        
+
 
         # if the window is not hidden itterate through all visable windows and try to hide it
         log("waiting for game to start so we can hide and lock it")
-        
+
         windowhidethread = WindowHideThread()
         windowhidethread.daemon = True
         windowhidethread.start()
@@ -192,7 +192,7 @@ curconsoleline = 0
 def getnewconsolelines(confile):
     global curconsoleline
     if os.path.isfile(confile):
-        f = open(confile, "r", encoding="utf-8")
+        f = open(confile, "r", encoding="latin-1")
         consolelines = f.read().strip().split("\n")
         f.close()
         if len(consolelines) > curconsoleline:

@@ -19,12 +19,19 @@ def get_all_files(directory):
     return file_list
 
 for file in get_all_files(files):
-    print(file)
+    file = file.replace(files + os.sep, "")
+
     if not (os.path.isfile(files + os.sep + file)):
+        continue
+    elif file.endswith(".dll"):
+        print("skipped", file)
         continue
 
     if os.path.exists(game + os.sep + file):
         os.remove(game + os.sep + file)
+    
+    if not os.path.isdir(os.path.dirname(game + os.sep + file)):
+        os.makedirs(os.path.dirname(game + os.sep + file))
 
     shutil.copyfile(files + os.sep + file, game + os.sep + file)
     print(file)
