@@ -37,10 +37,10 @@ class NewlineThread(threading.Thread):
 
             if len(newlines) > 0:
                 is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 60
-                if ui.console_output.toPlainText() == "":
-                    ui.console_output.insertPlainText("\n".join(newlines))
-                else:
-                    ui.console_output.insertPlainText("\n" + "\n".join(newlines))
+                # if ui.console_output.toPlainText() == "":
+                ui.console_output.append("\n".join(newlines))
+                # else:
+                #     ui.console_output.append("\n" + "\n".join(newlines))
                 if is_at_bottom:
                     sleep(0.01)
                     scrollbar.setValue(scrollbar.maximum())
