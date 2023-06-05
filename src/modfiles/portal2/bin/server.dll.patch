@@ -1,0 +1,5 @@
+// 33 Player Patch
+replace: 4D 08 C7 00 01 00 00 00 C7 01 01 00 00 00 FF 15 | 4D 08 C7 00 20 00 00 00 C7 01 20 00 00 00 FF 15 // minimum_maxplayers
+replace: f7 d8 1b c0 f7 d8 83 c0 02 89 01 5d | f7 d8 1b c0 f7 d8 83 c0 20 89 01 5d // absolute_maxplayers
+replace: ff d0 85 c0 74 05 be 03 00 00 00 8b | ff d0 85 c0 74 05 be 21 00 00 00 8b // default_maxplayers
+replace: ff d0 85 c0 0f 85 af 05 00 00 b0 01 5f 5e | ff d0 85 c0 0f 85 af 05 00 00 b0 20 5f 5e // maxplayers

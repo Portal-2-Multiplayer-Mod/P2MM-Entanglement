@@ -73,6 +73,42 @@ def symlink(original, new):
     else:
         log("symlink failed", original)
 
+def read_patchfile(filepath):
+    f = open(filepath, "r")
+    data = f.read().strip().split("\n")
+    f.close()
+    newdata = []
+
+    for line in data:
+        line = line.strip()
+        if line.startswith("//"): continue
+        line = line.split("//")[0].strip()
+        newdata.append(line.lower())
+
+    operations = []
+    for line in newdata:
+        if line.startswith("replace:"):
+            line = line.replace("replace:", "").strip()
+            operation = line.split("|")
+            operation[0] = bytes.fromhex(operation[0].strip().replace(" ", ""))
+            operation[1] = bytes.fromhex(operation[1].strip().replace(" ", ""))
+            operations.append(operation)
+    
+    return operations
+
+def patch_with_patchfile(binarypath, patchfilepath):
+    operations = read_patchfile(patchfilepath)
+    f = open(binarypath, "rb")
+    data = f.read()
+    f.close()
+
+    for op in operations:
+        data = data.replace(op[0], op[1])
+    
+    f = open(binarypath, "wb")
+    f.write(data)
+    f.close()
+
 def download_file(url, local_filename):
     with requests.get(url, stream=True) as r:
         r.raise_for_status()

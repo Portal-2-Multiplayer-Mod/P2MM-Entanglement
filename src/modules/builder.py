@@ -33,6 +33,15 @@ def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
 
     sizetracker = 0
 
+    def patchfileroutine(fl2):
+        if not os.path.exists(outputpath + os.path.dirname(fl2)):
+            os.makedirs(outputpath + os.path.dirname(fl2))
+        if not os.path.exists(modfilespath + fl2):
+            shutil.copyfile(gamepath + fl2, outputpath + fl2)
+        else:
+            shutil.copyfile(modfilespath + fl2, outputpath + fl2)
+        patch_with_patchfile(outputpath + fl2, modfilespath + fl2 + ".patch")
+
     #* assemble the base server
     log("symlinking server")
     oldtime = time.time()
@@ -41,16 +50,21 @@ def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
             continue
         if fl.startswith("!hc"): # do a hard copy if the bang is present
             fl = fl.replace("!hc", "").strip()
-            if getsystem() == "linux":
-                if not os.path.exists(modfilespath + fl):
-                    symlink(gamepath + fl, outputpath + fl)
-            elif getsystem() == "windows": # we only need to hard copy on windows as linux can remove the symlinks fine when the game is running
-                if not os.path.exists(outputpath + os.path.dirname(fl)):
-                    os.makedirs(outputpath + os.path.dirname(fl))
-                if not os.path.exists(modfilespath + fl):
-                    sizetracker += os.path.getsize(gamepath + fl)
-                    shutil.copyfile(gamepath + fl, outputpath + fl)
+            if os.path.exists(modfilespath + fl + ".patch"): # if a patchfile is present do a hardcopy on all os's and patch the file
+                patchfileroutine(fl)
+            else: 
+                if getsystem() == "linux":
+                    if not os.path.exists(modfilespath + fl): # if it isn't in modfiles symlink it, if it isn't, dont, so we can symlink that later
+                        symlink(gamepath + fl, outputpath + fl)
+                elif getsystem() == "windows": # we only need to hard copy on windows as linux can remove the symlinks fine when the game is running
+                    if not os.path.exists(outputpath + os.path.dirname(fl)):
+                        os.makedirs(outputpath + os.path.dirname(fl))
+                    if not os.path.exists(modfilespath + fl):
+                        sizetracker += os.path.getsize(gamepath + fl)
+                        shutil.copyfile(gamepath + fl, outputpath + fl)                
         else:
+            if os.path.exists(modfilespath + fl + ".patch"): # patch anything with a patchfile
+                patchfileroutine(fl)
             if not os.path.exists(modfilespath + fl):
                 symlink(gamepath + fl, outputpath + fl)
 
