@@ -95,7 +95,6 @@ def launch_game():
 
 commandlistpos = -1
 def send_rcon():
-    print(functions.rconpasswd)
     global commandlistpos
     if launcher.gameisrunning and launcher.RconReady:
         text = ui.command_line.text()
