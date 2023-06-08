@@ -1,4 +1,7 @@
-## Welcome to P2MM Entaglement! Where chaos reigns supreme and logic goes to die!
+## Welcome to P2MM Entaglement! 
+Where chaos reigns supreme and logic goes to die!
+
+![P2MM BANNER](https://cdn.discordapp.com/attachments/839766490231078943/1116246132209766460/EntanglementBanner.png)
 
 ## GOALS
 - Allow up to 32 players to join a singular game.
