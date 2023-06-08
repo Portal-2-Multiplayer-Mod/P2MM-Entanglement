@@ -1,4 +1,4 @@
-## Welcome to P2MM Renewed! Where chaos reigns supreme and logic goes to die! 
+## Welcome to P2MM Ruby! Where chaos reigns supreme and logic goes to die! 
 ![P2MM Renewed Banner](https://cdn.discordapp.com/attachments/839766490231078943/1112877029042434058/RenewedBanner.png)
 
 ## GOALS
@@ -7,7 +7,6 @@
 - Have a nice in-game configuration and command system.
 - Integrate and patch singleplayer to fit into coop via downloadable packages in the ui. *[Portal 2 Singleplayer, Portal, Portal Stories Mel, Aperture Tag]*
 - Use a best guess system to patch workshop maps into a 3+ player format also downloadable from the ui.
-- 
 
 # DEVELOPMENT
 1. Clone the repo ``git clone https://github.com/Portal-2-Multiplayer-Mod/Portal-2-Multiplayer-Mod-Renewed``
