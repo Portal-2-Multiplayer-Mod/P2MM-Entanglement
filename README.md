@@ -1,4 +1,4 @@
-## Welcome to P2MM Ruby! Where chaos reigns supreme and logic goes to die!
+## Welcome to P2MM Entaglement! Where chaos reigns supreme and logic goes to die!
 
 ## GOALS
 - Allow up to 32 players to join a singular game.
