@@ -1,5 +1,4 @@
-## Welcome to P2MM Ruby! Where chaos reigns supreme and logic goes to die! 
-![P2MM Renewed Banner](https://cdn.discordapp.com/attachments/839766490231078943/1112877029042434058/RenewedBanner.png)
+## Welcome to P2MM Ruby! Where chaos reigns supreme and logic goes to die!
 
 ## GOALS
 - Allow up to 32 players to join a singular game.
