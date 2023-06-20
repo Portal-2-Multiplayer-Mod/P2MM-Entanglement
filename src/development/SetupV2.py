@@ -4,15 +4,16 @@
 #! Note: this script assumes that you're running it from the root directory of the project (python ./src/development/SetupV2.py)
 #! Note: this script doesn't work on all linux distributions
 
-import os, platform, subprocess, ctypes, sys
+import os, platform, subprocess
+import pkg_resources
 
 system = ""
 
-def IsAdmin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
+# def IsAdmin():
+#     try:
+#         return ctypes.windll.shell32.IsUserAnAdmin()
+#     except:
+#         return False
 
 def print_color(text, color):
     colors = {
@@ -30,6 +31,13 @@ def print_color(text, color):
         print(f"{colors[color]}{text}{colors['reset']}")
     else:
         print(text)
+
+def IsPackageInstalled(package : str) -> bool:
+    try:
+        pkg_resources.get_distribution(package)
+        return True
+    except pkg_resources.DistributionNotFound:
+        return False
 
 def AskUser(question) -> bool:
     while True:
@@ -78,14 +86,18 @@ def CreateVenv() -> None:
     #         exit(1)
 
 def InstallPackages():
-    print("Installing packages...")
+    print_color("Attempting to install packages...", "blue")
 
     isVenvAvailable = AskUser("Would you like to create a virtual environment? (recommended)")
     if isVenvAvailable:
         CreateVenv()
 
     if isVenvAvailable:
-        pipPath = os.getcwd() + os.sep + "env" + os.sep + "Scripts" + os.sep + "pip.exe"
+        if system == "windows":
+            pipPath = os.getcwd() + "\\env\\Scripts\\pip.exe"
+        if system == "linux":
+            pipPath = os.getcwd() + "/env/bin/pip"
+
     else:
         pipPath = "python -m pip"
 
@@ -109,38 +121,17 @@ if __name__ == "__main__":
     if system == "windows":
         InstallPackages()
 
-
     if system == "linux":
-        import pkg_resources
+        print("you're on linux, this script may not work properly on some distros")
+
+        if not AskUser("Would you like to proceed?"):
+            exit(0)
 
         # PYQT5
-        if is_pyqt5_installed():
-            print("PyQt5 is installed.")
-        else:
+        if not IsPackageInstalled("pyqt5"):
             print_color("PyQt5 is not installed.", "red")
-            print_color("Please install python pyqt5 from your distro's default repo, then simply press enter.", "yellow")
-            input()
-            if is_pyqt5_installed():
-                print_color("PyQt5 is installed.", "green")
-            else:
-                if ask_yes_no("PyQt5 is still not installed... we can try to install it using pip but unless you are on a rolling distro like arch it likly wont run as the qt versions will mismatch. Would you like to install it through pip automatically?"):
-                    if not install_package("pyqt5"):
-                        print("Error installing PyQt5. Exiting.", "red")
-                        exit()
-                    else:
-                        print("PyQt5 installed, if it causes problems or doesn't run then run 'pip uninstall pyqt5'")
-                else:
-                    print("PyQt5 is not installed. Exiting.", "red")
-                    exit()
+            print_color("It's recommended that you install pyqt5 manually from your distro's repo", "yellow")
+            if not AskUser("Would you still want the script to try installing it?"):
+                exit(0)
 
-            #! linux only packages go here
-            packagelist = []
-
-            for package in general_packages:
-                packagelist.append(package)
-            for package in packagelist:
-                try:
-                    pkg_resources.get_distribution(package.split("==")[0])
-                except pkg_resources.DistributionNotFound:
-                    install_package(package)
-    
+        InstallPackages()
