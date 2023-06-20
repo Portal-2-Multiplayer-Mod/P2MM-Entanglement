@@ -9,6 +9,7 @@ from modules.logging import log
 from modules.logging import getnewlines
 from time import sleep
 import multiprocessing
+from qt_material import apply_stylesheet
 
 def terminate(): # we need something to terminate the whole file in the case of a fault
     launcher.handlelockfile(True)
@@ -113,6 +114,8 @@ def gui_main():
     global ui
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('Fusion')
+    apply_stylesheet(app, theme='p2mm.xml')
     MainWindow = QtWidgets.QWidget()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)

@@ -56,6 +56,7 @@ def install_package(package_name):
 general_packages = [
     "rcon==2.3.9",
     "requests",
+    "qt_material"
 ]
 
 if system == "linux":
