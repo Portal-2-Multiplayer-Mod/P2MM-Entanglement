@@ -6,7 +6,7 @@ import threading, ctypes
 import modules.launcher as launcher
 import modules.functions as functions
 from modules.logging import log
-from modules.logging import getnewlines
+from modules.logging import GetNewLines
 from time import sleep
 import multiprocessing
 
@@ -24,7 +24,7 @@ class NewlineThread(threading.Thread):
 
         scrollbar = ui.console_output.verticalScrollBar()
         while True:
-            output = getnewlines(self.curgloballine)
+            output = GetNewLines(self.curgloballine)
             self.curgloballine = output[1]
             newlines = output[0]
 
