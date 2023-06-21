@@ -29,7 +29,7 @@ def sendrcon(cmd, password, port = 3280, hist = False):
 
 import urllib.request
 
-def getsystem():
+def getSystem():
     system = platform.system().lower()
     return system
 
@@ -44,9 +44,9 @@ def list_files_recursive(directory):
 def puresymlink(original, new):
     if not os.path.exists(os.path.dirname(new)):
         os.makedirs(os.path.dirname(new))
-    if getsystem() == "linux":
+    if getSystem() == "linux":
         os.symlink(original, new)
-    elif getsystem() == "windows":
+    elif getSystem() == "windows":
         fh = open("NUL","w")
         subprocess.Popen('mklink /H "%s" "%s"' % (new, original), shell=True, stdout = fh, stderr = fh)
         fh.close()
@@ -139,3 +139,11 @@ def downloadgoldberg(outputpath = "steam_api.dll"):
         
     shutil.copy(downloadfolder+"/steam_api.dll", outputpath)
     shutil.rmtree(downloadfolder)
+
+def WriteToFile(fileName: str, text:str ,mode:str = "w", _encoding="utf-8") -> None:
+    with open(fileName, mode, encoding=_encoding) as f:
+        f.write(text)
+
+def ReadFromFile(fileName: str, mode:str ="r", _encoding="utf-8") -> str:
+    with open(fileName, mode, encoding=_encoding) as f:
+        return f.read()
