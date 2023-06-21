@@ -5,7 +5,6 @@
 #! Note: this script doesn't work on all linux distributions
 
 import os, platform, subprocess
-import pkg_resources
 
 system = ""
 
@@ -32,11 +31,11 @@ def print_color(text, color):
     else:
         print(text)
 
-def IsPackageInstalled(package : str) -> bool:
+def IsPyqtInstalled() -> bool:
     try:
-        pkg_resources.get_distribution(package)
+        import PyQt5
         return True
-    except pkg_resources.DistributionNotFound:
+    except Exception:
         return False
 
 def AskUser(question) -> bool:
@@ -128,10 +127,10 @@ if __name__ == "__main__":
             exit(0)
 
         # PYQT5
-        if not IsPackageInstalled("pyqt5"):
+        if not IsPyqtInstalled("pyqt5"):
             print_color("PyQt5 is not installed.", "red")
             print_color("It's recommended that you install pyqt5 manually from your distro's repo", "yellow")
-            if not AskUser("Would you still want the script to try installing it?"):
+            if not AskUser("Would you want the script to try installing it?"):
                 exit(0)
 
         InstallPackages()
