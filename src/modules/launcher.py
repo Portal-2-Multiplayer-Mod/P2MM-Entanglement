@@ -12,8 +12,8 @@ import threading
 from typing import Any
 
 import psutil #!pip isntall psutil
-from modules.builder import buildserver
-from modules.functions import getsystem
+from modules.builder import buildServer
+from modules.functions import getSystem
 import modules.functions as functions
 from modules.logging import log
 
@@ -22,13 +22,13 @@ random.seed(time.time())
 gameisrunning = False
 RconReady = False
 
-if getsystem() == "darwin":
+if getSystem() == "darwin":
     log("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
     exit()
-elif getsystem() == "windows":
+elif getSystem() == "windows":
     import win32gui #!pip install pywin32
     gamepath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2\\"
-elif getsystem() == "linux":
+elif getSystem() == "linux":
     gamepath = os.path.expanduser("~/.local/share/Steam/steamapps/common/Portal 2/")
 
 gamehidden = 0 # i have this varible outside of its respective function as the enumwindows fuction appears not to be able to handle global imports from local functions
@@ -119,12 +119,12 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
 
     handlelockfile() # clean up any possible zombie instances
 
-    buildserver(gamepath, "modfiles/", bsdir) # build the serverfiles
+    buildServer(gamepath, "modfiles/", bsdir) # build the serverfiles
     log("buildserver routine finished!")
     launchargs = "+rcon_password " + rconpasswd + " " + launchargs
 
     # launch the game
-    if getsystem() == "linux":
+    if getSystem() == "linux":
         log("Running In linux mode!")
         def create_wine_prefix(folder_path):
             # Check if the folder already exists
@@ -144,7 +144,7 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
         while not os.path.isfile(confilepath): time.sleep(0.1)
         log(str(process.pid) + "=============================")
         createlockfile(process.pid)
-    elif getsystem() == "windows":
+    elif getSystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
 
         log("game running press CTRL+C to terminate")

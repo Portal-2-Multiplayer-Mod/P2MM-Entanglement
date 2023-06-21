@@ -1,103 +1,141 @@
-#!/bin/python
+# * PURPOSE: take a pre-existing portal 2 and strip it down into a dedicated
+# * server-like environment that run's headlessly and without a steam account
 
-#* PURPOSE: take a pre-existing portal 2 and strip it down into a dedicated
-#* server-like environment that run's headlessly and without a steam account
-
-import os, time, shutil, sys
+import os, time, shutil, sys, math
 from modules.functions import *
-import math
 from modules.logging import log
 
-def convert_size(size_bytes): # cute little bytes size formatter
-   if size_bytes == 0:
-       return "0B"
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size_bytes, 1024)))
-   p = math.pow(1024, i)
-   s = round(size_bytes / p, 2)
-   return "%s %s" % (s, size_name[i])
 
-def buildserver(gamepath, modfilespath, outputpath, softbuild = True):
-    f = open("gamefiles.txt")
-    filelist = f.read().strip().replace("/", os.sep).split("\n")
-    f.close()
+def ConvertBytesSize(bytesSize: int) -> str:
+    """cute little bytes size formatter
 
-    #* create whatever paths need to exist
-    if not os.path.exists(gamepath):
+    Parameters
+    ----------
+    bytesSize : int
+        Size in bytes
+
+    Returns
+    -------
+    str
+        Human readable file size
+    """
+
+    if bytesSize == 0:
+        return "0B"
+
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+
+    i = int(math.floor(math.log(bytesSize, 1024)))
+    p = math.pow(1024, i)
+    s = round(bytesSize / p, 2)
+    return "%s %s" % (s, size_name[i])
+
+
+def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
+    """_summary_
+
+    Parameters
+    ----------
+    gamePath : _type_
+        _description_
+    modFilesPath : _type_
+        _description_
+    outputPath : _type_
+        _description_
+    isSoftBuild : bool, optional
+        _description_, by default True
+    """
+    filesList = ReadFromFile("gamefiles.txt").strip().replace("/", os.sep).split("\n")
+
+    # * create whatever paths need to exist
+    if not os.path.exists(gamePath):
         log("path doesn't exist")
-        exit()
+        exit(1)
 
-    if os.path.exists(outputpath):
-        shutil.rmtree(outputpath)
-    os.mkdir(outputpath)
+    if os.path.exists(outputPath):
+        shutil.rmtree(outputPath)
+    os.mkdir(outputPath)
 
-    sizetracker = 0
+    sizeTracker = 0
 
-    def patchfileroutine(fl2):
-        if not os.path.exists(outputpath + os.path.dirname(fl2)):
-            os.makedirs(outputpath + os.path.dirname(fl2))
-        if not os.path.exists(modfilespath + fl2):
-            shutil.copyfile(gamepath + fl2, outputpath + fl2)
+    def patchFileRoutine(file):
+        if not os.path.exists(outputPath + os.path.dirname(file)):
+            os.makedirs(outputPath + os.path.dirname(file))
+        if not os.path.exists(modFilesPath + file):
+            shutil.copyfile(gamePath + file, outputPath + file)
         else:
-            shutil.copyfile(modfilespath + fl2, outputpath + fl2)
-        patch_with_patchfile(outputpath + fl2, modfilespath + fl2 + ".patch")
+            shutil.copyfile(modFilesPath + file, outputPath + file)
+        patch_with_patchfile(outputPath + file, modFilesPath + file + ".patch")
 
-    #* assemble the base server
+    # * assemble the base server
     log("symlinking server")
-    oldtime = time.time()
-    for fl in filelist:
-        if fl.startswith("#"): # if its a comment just pass it
+
+    oldTime = time.time()
+
+    for file in filesList:
+        if file.startswith("#"):  # if its a comment just pass it
             continue
-        if fl.startswith("!hc"): # do a hard copy if the bang is present
-            fl = fl.replace("!hc", "").strip()
-            if os.path.exists(modfilespath + fl + ".patch"): # if a patchfile is present do a hardcopy on all os's and patch the file
-                patchfileroutine(fl)
-            else: 
-                if getsystem() == "linux":
-                    if not os.path.exists(modfilespath + fl): # if it isn't in modfiles symlink it, if it isn't, dont, so we can symlink that later
-                        symlink(gamepath + fl, outputpath + fl)
-                elif getsystem() == "windows": # we only need to hard copy on windows as linux can remove the symlinks fine when the game is running
-                    if not os.path.exists(outputpath + os.path.dirname(fl)):
-                        os.makedirs(outputpath + os.path.dirname(fl))
-                    if not os.path.exists(modfilespath + fl):
-                        sizetracker += os.path.getsize(gamepath + fl)
-                        shutil.copyfile(gamepath + fl, outputpath + fl)                
+
+        if file.startswith("!hc"):  # do a hard copy if the bang is present
+            file = file.replace("!hc", "").strip()
+
+            # if a patchFile is present do a hard copy on all os's and patch the file
+            if os.path.exists(modFilesPath + file + ".patch"):
+                patchFileRoutine(file)
+
+            else:
+                if getSystem() == "linux":
+                    # if it isn't in modFiles symlink it, if it isn't, dont, so we can symlink that later
+                    if not os.path.exists(modFilesPath + file):
+                        symlink(gamePath + file, outputPath + file)
+                # we only need to hard copy on windows as linux can remove the symlinks fine when the game is running
+                elif getSystem() == "windows":
+                    if not os.path.exists(outputPath + os.path.dirname(file)):
+                        os.makedirs(outputPath + os.path.dirname(file))
+                    if not os.path.exists(modFilesPath + file):
+                        sizeTracker += os.path.getsize(gamePath + file)
+                        shutil.copyfile(gamePath + file, outputPath + file)
+
         else:
-            if os.path.exists(modfilespath + fl + ".patch"): # patch anything with a patchfile
-                patchfileroutine(fl)
-            if not os.path.exists(modfilespath + fl):
-                symlink(gamepath + fl, outputpath + fl)
+            # patch anything with a patchfile
+            if os.path.exists(modFilesPath + file + ".patch"):
+                patchFileRoutine(file)
+            if not os.path.exists(modFilesPath + file):
+                symlink(gamePath + file, outputPath + file)
 
-    #* tack on the modfiles
-    for fl in get_all_files(modfilespath):
-       symlink(os.path.abspath(modfilespath + fl), outputpath + fl) #! for some reason this doesn't work without the abspath on linux
+    # * tack on the modfiles
+    for file in get_all_files(modFilesPath):
+        #! for some reason this doesn't work without the abspath on linux
+        #* because you should add a "./"
+        symlink(os.path.abspath(modFilesPath + file), outputPath + file)
 
-    log("symlinking finished in: " + str(time.time() - oldtime) + " seconds!")
-    
-    #* download goldberg into the correct folder
+    log("symlinking finished in: " + str(time.time() - oldTime) + " seconds!")
+
+    # * download goldberg into the correct folder
     if not os.path.isfile("goldberg.dll"):
         log("downloading goldberg...")
+
         try:
             downloadgoldberg("goldberg.dll")
-        except:
+        except Exception as e:
             log("failed to download goldberg! game will not start without a steam emulator")
-            log("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ open the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
+            log("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ \nopen the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
+            log(str(e), type="error")
             sys.exit(0)
+
         log("downloaded goldberg")
-    shutil.copyfile("goldberg.dll", outputpath + "bin/steam_api.dll")
-    sizetracker += os.path.getsize("goldberg.dll")
 
-    os.makedirs(outputpath + "bin/steam_settings")
-    f = open(outputpath + "bin/steam_settings/force_account_name.txt", "w", encoding="utf-8")
-    f.write("Console") # NAME FOR SERVER ACCOUNT
-    f.close()
+    shutil.copyfile("goldberg.dll", outputPath + "bin/steam_api.dll")
+    sizeTracker += os.path.getsize("goldberg.dll")
 
-    f = open(outputpath + "bin/steam_settings/offline.txt", "w", encoding="utf-8")
-    f.close()
+    os.makedirs(outputPath + "bin/steam_settings")
 
-    f = open(outputpath + "bin/steam_settings/force_steamid.txt", "w", encoding="utf-8")
-    f.write("69696969696969696") # NAME FOR SERVER ACCOUNT
-    f.close()
-    
+    # f = open(outputPath + "bin/steam_settings/offline.txt", "w", encoding="utf-8")
+    # f.close()
 
-    log("Final Size: " + convert_size(sizetracker))
+    # Server account name
+    WriteToFile(outputPath + "bin/steam_settings/force_account_name.txt", "Console")
+    # Server account id
+    WriteToFile(outputPath + "bin/steam_settings/force_steamid.txt", "69696969696969696")
+
+    log("Final Size: " + ConvertBytesSize(sizeTracker))
