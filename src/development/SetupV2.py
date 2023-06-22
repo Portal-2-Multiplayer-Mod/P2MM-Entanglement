@@ -7,12 +7,7 @@
 import os, platform, subprocess
 
 system = ""
-
-# def IsAdmin():
-#     try:
-#         return ctypes.windll.shell32.IsUserAnAdmin()
-#     except:
-#         return False
+python = "python"
 
 def print_color(text, color):
     colors = {
@@ -53,19 +48,9 @@ def AskUser(question) -> bool:
 
 def CreateVenv() -> None:
 
-    # # we need admin to activate the venv so we ask for it from the start
-    # if not IsAdmin():
-    #     x = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-
-    #     if x == 42:
-    #         exit(0)
-    #     else:
-    #         print_color("Couldn't get admin privilege, skipping the venv part", "red")
-    #         return
-
     #* create the venv
     try:
-        subprocess.check_call("python -m venv env")
+        subprocess.check_call(python+" -m venv env")
         print_color("venv created successfully", "green")
 
     except subprocess.CalledProcessError as e:
@@ -73,16 +58,6 @@ def CreateVenv() -> None:
         if not AskUser("would you like to proceed without venv (y) or quit (n)?"):
             exit(1)
 
-    # #* set script permission to process only
-    # try:
-    # # Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
-    #     subprocess.check_call(["powershell.exe", "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser"])
-    #     print_color("policy set successfully", "green")
-
-    # except subprocess.CalledProcessError as e:
-    #     print_color("an error occurred while trying to allow script activation!", "red")
-    #     if not AskUser("would you like to proceed without venv2 (y) or quit (n)?"):
-    #         exit(1)
 
 def InstallPackages():
     print_color("Attempting to install packages...", "blue")
@@ -98,7 +73,7 @@ def InstallPackages():
             pipPath = os.getcwd() + "/env/bin/pip"
 
     else:
-        pipPath = "python -m pip"
+        pipPath = python+" -m pip"
 
     try:
         subprocess.check_call(pipPath+" install -r requirements.txt")
@@ -121,13 +96,14 @@ if __name__ == "__main__":
         InstallPackages()
 
     if system == "linux":
+        python = "python3"
         print("you're on linux, this script may not work properly on some distros")
 
         if not AskUser("Would you like to proceed?"):
             exit(0)
 
         # PYQT5
-        if not IsPyqtInstalled("pyqt5"):
+        if not IsPyqtInstalled():
             print_color("PyQt5 is not installed.", "red")
             print_color("It's recommended that you install pyqt5 manually from your distro's repo", "yellow")
             if not AskUser("Would you want the script to try installing it?"):
