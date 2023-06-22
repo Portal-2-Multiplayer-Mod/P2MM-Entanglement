@@ -45,7 +45,7 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
     isSoftBuild : bool, optional
         _description_, by default True
     """
-    filesList = ReadFromFile("gamefiles.txt").strip().replace("/", os.sep).split("\n")
+    filesList = ReadFile("gamefiles.txt").strip().replace("/", os.sep).split("\n")
 
     # * create whatever paths need to exist
     if not os.path.exists(gamePath):
@@ -65,7 +65,7 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
             shutil.copyfile(gamePath + file, outputPath + file)
         else:
             shutil.copyfile(modFilesPath + file, outputPath + file)
-        patch_with_patchfile(outputPath + file, modFilesPath + file + ".patch")
+        PatchData(outputPath + file, modFilesPath + file + ".patch")
 
     # * assemble the base server
     log("symlinking server")
@@ -84,12 +84,12 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
                 patchFileRoutine(file)
 
             else:
-                if getSystem() == "linux":
+                if GetSystem() == "linux":
                     # if it isn't in modFiles symlink it, if it isn't, dont, so we can symlink that later
                     if not os.path.exists(modFilesPath + file):
-                        symlink(gamePath + file, outputPath + file)
+                        Symlink(gamePath + file, outputPath + file)
                 # we only need to hard copy on windows as linux can remove the symlinks fine when the game is running
-                elif getSystem() == "windows":
+                elif GetSystem() == "windows":
                     if not os.path.exists(outputPath + os.path.dirname(file)):
                         os.makedirs(outputPath + os.path.dirname(file))
                     if not os.path.exists(modFilesPath + file):
@@ -101,13 +101,13 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
             if os.path.exists(modFilesPath + file + ".patch"):
                 patchFileRoutine(file)
             if not os.path.exists(modFilesPath + file):
-                symlink(gamePath + file, outputPath + file)
+                Symlink(gamePath + file, outputPath + file)
 
     # * tack on the modfiles
-    for file in get_all_files(modFilesPath):
+    for file in GetAllFilesInDir(modFilesPath):
         #! for some reason this doesn't work without the abspath on linux
         #* because you should add a "./"
-        symlink(os.path.abspath(modFilesPath + file), outputPath + file)
+        Symlink(os.path.abspath(modFilesPath + file), outputPath + file)
 
     log("symlinking finished in: " + str(time.time() - oldTime) + " seconds!")
 
@@ -116,7 +116,7 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
         log("downloading goldberg...")
 
         try:
-            downloadgoldberg("goldberg.dll")
+            DownloadGoldberg("goldberg.dll")
         except Exception as e:
             log("failed to download goldberg! game will not start without a steam emulator")
             log("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ \nopen the zip and extract only steam_api.dll to this folder and name it goldberg.dll")

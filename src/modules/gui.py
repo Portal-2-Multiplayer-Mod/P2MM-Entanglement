@@ -58,7 +58,7 @@ class LaunchThread(threading.Thread):
     def run(self):
         global heldproc
         # target function of the thread class
-        heldproc = launcher.launchgame(rconpasswdlocal=functions.rconpasswd)
+        heldproc = launcher.launchgame(rconpasswdlocal=functions.rconPassword)
         ui.start_button.setText("Stop")
         ui.start_button.setEnabled(True)
 
@@ -98,7 +98,7 @@ def send_rcon():
     global commandlistpos
     if launcher.gameisrunning and launcher.RconReady:
         text = ui.command_line.text()
-        output = functions.sendrcon(text, functions.rconpasswd, hist=True)
+        output = functions.SendRcon(text, functions.rconPassword, hist=True)
         ui.command_line.setText("")
         commandlistpos = -1
         if len(output.strip()) > 0:
@@ -126,17 +126,17 @@ def gui_main():
     def handle_key_press(event): # cycle previous commands when arrows are pressed
         global commandlistpos
         if event.key() == Qt.Key_Up:
-            if len(functions.userrconhist) == 0:
+            if len(functions.UserRconHist) == 0:
                 commandlistpos = -1
                 return
 
             commandlistpos += 1
-            if commandlistpos > len(functions.userrconhist) - 1:
-                commandlistpos = len(functions.userrconhist) - 1
+            if commandlistpos > len(functions.UserRconHist) - 1:
+                commandlistpos = len(functions.UserRconHist) - 1
 
-            ui.command_line.setText(functions.userrconhist[commandlistpos])
+            ui.command_line.setText(functions.UserRconHist[commandlistpos])
         elif event.key() == Qt.Key_Down:
-            if len(functions.userrconhist) == 0:
+            if len(functions.UserRconHist) == 0:
                 commandlistpos = -1
                 return
 
@@ -146,7 +146,7 @@ def gui_main():
                 commandlistpos = -1
                 return
 
-            ui.command_line.setText(functions.userrconhist[commandlistpos])
+            ui.command_line.setText(functions.UserRconHist[commandlistpos])
         else:
             # allow the widget to process other key events normally
             QtWidgets.QLineEdit.keyPressEvent(ui.command_line, event)

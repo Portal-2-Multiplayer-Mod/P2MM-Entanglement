@@ -13,7 +13,7 @@ from typing import Any
 
 import psutil #!pip isntall psutil
 from modules.builder import buildServer
-from modules.functions import getSystem
+from modules.functions import GetSystem
 import modules.functions as functions
 from modules.logging import log
 
@@ -22,13 +22,13 @@ random.seed(time.time())
 gameisrunning = False
 RconReady = False
 
-if getSystem() == "darwin":
+if GetSystem() == "darwin":
     log("We currently do not support MacOS hosting, nor do we plan to. However, you can still join other P2MM servers from a mac client.")
     exit()
-elif getSystem() == "windows":
+elif GetSystem() == "windows":
     import win32gui #!pip install pywin32
     gamepath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2\\"
-elif getSystem() == "linux":
+elif GetSystem() == "linux":
     gamepath = os.path.expanduser("~/.local/share/Steam/steamapps/common/Portal 2/")
 
 gamehidden = 0 # i have this varible outside of its respective function as the enumwindows fuction appears not to be able to handle global imports from local functions
@@ -85,7 +85,7 @@ class RconTestThread(threading.Thread):
         shouldrun = True
         while shouldrun and gameisrunning:
             try:
-                output = functions.sendrcon('script printl("ready")', rconpasswd, rconport)
+                output = functions.SendRcon('script printl("ready")', rconpasswd, rconport)
                 if output.strip() == "ready":
                     log("rcon ready")
                     RconReady = True
@@ -124,7 +124,7 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
     launchargs = "+rcon_password " + rconpasswd + " " + launchargs
 
     # launch the game
-    if getSystem() == "linux":
+    if GetSystem() == "linux":
         log("Running In linux mode!")
         def create_wine_prefix(folder_path):
             # Check if the folder already exists
@@ -144,7 +144,7 @@ def launchgame(builtserverdir = bsdir, rconpasswdlocal="blank", launchargs="+hos
         while not os.path.isfile(confilepath): time.sleep(0.1)
         log(str(process.pid) + "=============================")
         createlockfile(process.pid)
-    elif getSystem() == "windows":
+    elif GetSystem() == "windows":
         process = subprocess.Popen('"' + builtserverdir + 'portal2.exe" ' + launchargs, shell=True)
 
         log("game running press CTRL+C to terminate")

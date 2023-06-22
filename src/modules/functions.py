@@ -1,39 +1,117 @@
-import os, shutil, requests, zipfile, platform, subprocess, socket, string, random
+"""
+    Has common functions that we use repeatedly throughout the project
+"""
+
+import os, shutil, zipfile, platform, subprocess, socket, string, random, urllib.request
 from rcon.source import Client
 from modules.logging import log
 
-def randomword(length):
-   letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))
+rconPassword: str
 
-rconpasswd = randomword(6)
+Hostname: str
+LocalIp: str
 
-hostname = socket.gethostname()
-local_ip = socket.gethostbyname(hostname)
+RconHist: list
+UserRconHist: list
 
-userrconhist = []
-rconhist = []
-def sendrcon(cmd, password, port = 3280, hist = False):
+
+def __init() -> None:
+    """
+    Initializes local variables,
+    !Called at the bottom of the file
+    """
+    global rconPassword, Hostname, LocalIp, RconHist, UserRconHist
+
+    rconPassword = GenerateRandomString(6)
+
+    Hostname = socket.gethostname()
+    LocalIp = socket.gethostbyname(Hostname)
+
+    RconHist = []
+    UserRconHist = []
+
+
+def GenerateRandomString(length: int) -> str:
+    """Generates a random string
+
+    Parameters
+    ----------
+    length : int
+        length of the desired string
+
+    Returns
+    -------
+    str
+        a string of random lowercase letters
+    """
+
+    letters = string.ascii_lowercase
+    return "".join(random.choice(letters) for i in range(length))
+
+
+def SendRcon(cmd: str, password: str, port: int = 3280, hist: bool = False) -> str:
+    """Genuinely no idea what it does
+
+    Parameters
+    ----------
+    cmd : str
+        command to be sent
+    password : str
+        server password
+    port : int, optional
+        by default 3280
+    hist : bool, optional
+        no idea, by default False
+
+    Returns
+    -------
+    str
+        response
+    """
     if hist:
-        userrconhist.reverse()
-        userrconhist.append(cmd)
-        userrconhist.reverse()
+        UserRconHist.reverse()
+        UserRconHist.append(cmd)
+        UserRconHist.reverse()
     else:
-        rconhist.append(cmd)
+        RconHist.append(cmd)
+
     try:
-        with Client(local_ip, port, passwd=password) as client:
+        with Client(LocalIp, port, passwd=password) as client:
             response = client.run(cmd)
         return response
     except Exception as e:
+        #! FOR THE LOVE OF GOD LOG THE EXCEPTION OR PRINT IT
+        log(str(e))
         return ""
 
-import urllib.request
 
-def getSystem():
+def GetSystem() -> str:
+    """returns the operating system's name
+
+    Returns
+    -------
+    str
+        OS name
+    """
+
     system = platform.system().lower()
     return system
 
-def list_files_recursive(directory):
+
+def GetAllFilesInDir(directory: str) -> list[str]:
+    """gets the relative path of all files under a directory
+
+    Parameters
+    ----------
+    directory : str
+        the directory to search in
+
+    Returns
+    -------
+    list[str]
+        list of files' paths relative to the directory provided
+    """
+
     files_list = []
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -41,109 +119,161 @@ def list_files_recursive(directory):
             files_list.append(file_path)
     return files_list
 
-def puresymlink(original, new):
+
+def __CreateSymlink(original: str, new: str) -> None:
+    """creates a symlink
+
+    Parameters
+    ----------
+    original : str
+        the Target file
+    new : str
+        path of the link
+    """
+
+    if GetSystem() == "linux":
+        os.symlink(original, new)
+
+    elif GetSystem() == "windows":
+        with open("NUL", "w") as fh:
+            subprocess.Popen(
+                f'mklink /H "{new}" "{original}"', shell=True, stdout=fh, stderr=fh
+            )
+
+
+def Symlink(original: str, new: str) -> None:
+    """creates a symlink, will do nothing if the original path is invalid
+
+    Parameters
+    ----------
+    original : str
+        the Target file
+    new : str
+        path of the link
+    """
+
+    if not os.path.exists(original):
+        log(f"symlink failed! file '{original}' doesn't exist")
+        return
+
     if not os.path.exists(os.path.dirname(new)):
         os.makedirs(os.path.dirname(new))
-    if getSystem() == "linux":
-        os.symlink(original, new)
-    elif getSystem() == "windows":
-        fh = open("NUL","w")
-        subprocess.Popen('mklink /H "%s" "%s"' % (new, original), shell=True, stdout = fh, stderr = fh)
-        fh.close()
 
-def get_all_files(directory):
-    file_list = []
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            file_list.append(os.path.relpath(file_path, directory))
-    return file_list
+    # * if its a directory iterate through it and symlink every file
+    if os.path.isdir(original):
+        for file in GetAllFilesInDir(original):
+            __CreateSymlink(original + file, new + file)
+        return
 
-def symlink(original, new):
-    if os.path.exists(original):
-        if not os.path.exists(os.path.dirname(new)):
-            os.makedirs(os.path.dirname(new))
+    __CreateSymlink(original, new)
 
-        #* if its a directory itterate through it and sylink every file
-        if os.path.isdir(original):
-            for file in list_files_recursive(original):
-                puresymlink(original + file, new + file)
-        else:
-            puresymlink(original, new)
-    else:
-        log("symlink failed", original)
 
-def read_patchfile(filepath):
-    f = open(filepath, "r")
-    data = f.read().strip().split("\n")
-    f.close()
-    newdata = []
+def ReadPatchFile(filepath) -> list[list[str]]:
+    data = ReadFile(filepath).strip().split("\n")
+    newData: list[str] = []
 
     for line in data:
         line = line.strip()
-        if line.startswith("//"): continue
+        if line.startswith("//"):
+            continue
         line = line.split("//")[0].strip()
-        newdata.append(line.lower())
+        newData.append(line.lower())
 
-    operations = []
-    for line in newdata:
+    operations: list[list[str]] = []
+    for line in newData:
         if line.startswith("replace:"):
             line = line.replace("replace:", "").strip()
             operation = line.split("|")
             operation[0] = bytes.fromhex(operation[0].strip().replace(" ", ""))
             operation[1] = bytes.fromhex(operation[1].strip().replace(" ", ""))
             operations.append(operation)
-    
+
     return operations
 
-def patch_with_patchfile(binarypath, patchfilepath):
-    operations = read_patchfile(patchfilepath)
-    f = open(binarypath, "rb")
-    data = f.read()
-    f.close()
+
+def PatchData(binaryPath, patchFilePath):
+    operations = ReadPatchFile(patchFilePath)
+
+    data = ReadFile(binaryPath, "rb")
 
     for op in operations:
         data = data.replace(op[0], op[1])
-    
-    f = open(binarypath, "wb")
-    f.write(data)
-    f.close()
 
-def download_file(url, local_filename):
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192): 
-                f.write(chunk)
-    return local_filename
+    WriteToFile(binaryPath, data, "wb")
 
-#* we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
-def downloadgoldberg(outputpath = "steam_api.dll"):
-    downloadfolder = "pydowntemp"
-    downloadPath = downloadfolder+"/goldberg.zip"
-    
-    if os.path.exists(downloadfolder):
-        shutil.rmtree(downloadfolder)
-        
-    os.mkdir(downloadfolder)
-    urllib.request.urlretrieve("https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/2524331e488ec6399c396cf48bbe9903/Goldberg_Lan_Steam_Emu_v0.2.5.zip", downloadPath)
-    
+
+def DownloadFile(url:str, downloadPath:str) -> bool:
+    """Downloads a file to the specified path
+
+    Parameters
+    ----------
+    url : str
+        the file's link
+    local_filename : str
+        path to download to (must include file name)
+
+    Returns
+    -------
+    bool
+        true if downloaded, false if failed
+    """
+
+    try:
+        urllib.request.urlretrieve(url, downloadPath)
+    except Exception as e:
+        log(str(e), "error")
+        return False
+
     if os.path.exists(downloadPath):
-        log("file exist")
+        log(f"downloaded {os.path.basename(downloadPath)} successfully")
+        return True
+    return False
 
-    with zipfile.ZipFile(downloadPath, 'r') as zip_ref:
-        zip_ref.extractall(downloadfolder)
-        
+# * we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
+def DownloadGoldberg(outputPath: str = "steam_api.dll") -> None:
+    """simply downloads goldberg
+
+    Parameters
+    ----------
+    outputPath : str, optional
+        by default "steam_api.dll"
+    """
+
+    downloadFolder = "pydowntemp"
+    downloadPath = downloadFolder + "/goldberg.zip"
+
+    if os.path.exists(downloadFolder):
+        shutil.rmtree(downloadFolder)
+
+    os.mkdir(downloadFolder)
+
+    isDownloaded = DownloadFile(
+        "https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/2524331e488ec6399c396cf48bbe9903/Goldberg_Lan_Steam_Emu_v0.2.5.zip",
+        downloadPath,
+    )
+
+    if not isDownloaded:
+        log("there was an issue downloading goldburg, please read the logs")
+        return
+
+    with zipfile.ZipFile(downloadPath) as zip_ref:
+        zip_ref.extractall(downloadFolder)
+
     if os.path.exists("steam_api.dll"):
         os.remove("steam_api.dll")
-        
-    shutil.copy(downloadfolder+"/steam_api.dll", outputpath)
-    shutil.rmtree(downloadfolder)
 
-def WriteToFile(fileName: str, text:str ,mode:str = "w", _encoding="utf-8") -> None:
+    shutil.copy(downloadFolder + "/steam_api.dll", outputPath)
+    shutil.rmtree(downloadFolder)
+
+
+def ReadFile(fileName: str, mode: str = "r", _encoding="utf-8") -> str:
+    with open(fileName, mode, encoding=_encoding) as f:
+        return f.read()
+
+
+def WriteToFile(fileName: str, text: str, mode: str = "w", _encoding="utf-8") -> None:
     with open(fileName, mode, encoding=_encoding) as f:
         f.write(text)
 
-def ReadFromFile(fileName: str, mode:str ="r", _encoding="utf-8") -> str:
-    with open(fileName, mode, encoding=_encoding) as f:
-        return f.read()
+
+__init()
