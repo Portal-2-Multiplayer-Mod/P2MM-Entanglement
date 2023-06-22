@@ -5,7 +5,7 @@ from modules.builder import BuildServer
 from modules.logging import log
 import modules.functions as fn
 
-#? why?
+# ? why?
 random.seed(time.time())
 
 IsGameRunning: bool = False
@@ -19,7 +19,7 @@ System: str = GetSystem()
 
 if System == "darwin":
     log(
-        "We currently do not support MacOS, nor do we plan to. However, you can still join other P2MM servers from a mac client."
+        "We do not support MacOS, nor do we plan to. However, you can still join other P2MM servers from a mac client."
     )
     exit(0)
 
@@ -135,6 +135,24 @@ def LaunchGame(
     rconLocalPassword: str = None,
     launchArgs: str = None,
 ) -> subprocess.Popen[bytes]:
+    """Starts portal 2
+
+    Parameters
+    ----------
+    builtServerDir : str, optional
+        the location where to build the local server, by default BuiltServerPath
+
+    rconLocalPassword : str, optional
+        the server's password, by default generates a random string
+
+    launchArgs : str, optional
+        args to use when starting portal 2, if nothing provided the default args will be used
+
+    Returns
+    -------
+    subprocess.Popen[bytes]
+        the game's process
+    """
     global RconPassword, IsRconReady
 
     IsRconReady = False
