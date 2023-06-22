@@ -48,6 +48,11 @@ def AskUser(question) -> bool:
 
 def CreateVenv() -> None:
 
+    # god, i hate debian
+    if system == "linux":
+        print_color("we detected that you're on linux, if you're on a debian based system you need to install venv package first \n    apt install python3.10-venv")
+        input("press ENTER after downloading venv")
+
     #* create the venv
     try:
         subprocess.check_call(python+" -m venv env")
