@@ -1,21 +1,29 @@
-import os, time, multiprocessing, sys, signal
+import os, sys, signal
 import modules.gui as gui
-import modules.functions as functions
 import modules.launcher as launcher
-import modules.logging as logging
 from modules.logging import log
 
-def sigint_handler(signal, frame): #* remove lockfile on exit
-            log("\n>EXIT SIGNAL RECIVED TERMINATING<\n")
-            launcher.handlelockfile()
-            sys.exit(0)
-signal.signal(signal.SIGINT, sigint_handler)
 
-os.chdir(os.path.abspath(os.path.dirname(__file__)))
+def sigint_handler(signal, frame) -> None:
+    """Deletes the lock file on launcher exit
 
-### gui
+    Parameters
+    ----------
+    signal : _type_
+        _description_
+    frame : _type_
+        _description_
+    """
 
-gui.gui_main()
-# launcher.launchgame()
+    log("\n>EXIT SIGNAL RECEIVED TERMINATING<\n")
+    launcher.HandleLockFile()
+    sys.exit(0)
 
-###
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    #todo: we really need to stop using 'chdir' it's really bad
+    os.chdir(os.path.abspath(os.path.dirname(__file__)))
+
+    gui.Main()
