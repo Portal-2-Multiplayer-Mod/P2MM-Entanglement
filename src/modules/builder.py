@@ -1,7 +1,7 @@
 # * PURPOSE: take a pre-existing portal 2 and strip it down into a dedicated
 # * server-like environment that run's headlessly and without a steam account
 
-import os, time, shutil, sys, math
+import os, time, shutil, math
 from modules.functions import *
 from modules.logging import log
 
@@ -31,26 +31,33 @@ def ConvertBytesSize(bytesSize: int) -> str:
     return "%s %s" % (s, size_name[i])
 
 
-def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
-    """_summary_
+def BuildServer(
+    gamePath: str, modFilesPath: str, outputPath: str, isSoftBuild: bool = True
+) -> bool:
+    """Builds the local server (symlinks the files and downloads goldburg)
 
     Parameters
     ----------
-    gamePath : _type_
-        _description_
-    modFilesPath : _type_
-        _description_
-    outputPath : _type_
-        _description_
+    gamePath : str
+        portal 2 path
+    modFilesPath : str
+        mod files path
+    outputPath : str
+        local server path
     isSoftBuild : bool, optional
-        _description_, by default True
+        no idea, by default True
+
+    Returns
+    -------
+    bool
+        status of the build, true id successful, false if failed (check logs)
     """
+
     filesList = ReadFile("gamefiles.txt").strip().replace("/", os.sep).split("\n")
 
     # * create whatever paths need to exist
     if not os.path.exists(gamePath):
         log("path doesn't exist")
-        exit(1)
 
     if os.path.exists(outputPath):
         shutil.rmtree(outputPath)
@@ -61,10 +68,13 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
     def patchFileRoutine(file):
         if not os.path.exists(outputPath + os.path.dirname(file)):
             os.makedirs(outputPath + os.path.dirname(file))
+
         if not os.path.exists(modFilesPath + file):
             shutil.copyfile(gamePath + file, outputPath + file)
+
         else:
             shutil.copyfile(modFilesPath + file, outputPath + file)
+
         PatchData(outputPath + file, modFilesPath + file + ".patch")
 
     # * assemble the base server
@@ -106,7 +116,7 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
     # * tack on the modfiles
     for file in GetAllFilesInDir(modFilesPath):
         #! for some reason this doesn't work without the abspath on linux
-        #* because you should add a "./"
+        # * because you should add a "./"
         Symlink(os.path.abspath(modFilesPath + file), outputPath + file)
 
     log("symlinking finished in: " + str(time.time() - oldTime) + " seconds!")
@@ -115,27 +125,31 @@ def buildServer(gamePath, modFilesPath, outputPath, isSoftBuild=True):
     if not os.path.isfile("goldberg.dll"):
         log("downloading goldberg...")
 
-        try:
-            DownloadGoldberg("goldberg.dll")
-        except Exception as e:
-            log("failed to download goldberg! game will not start without a steam emulator")
-            log("please manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ \nopen the zip and extract only steam_api.dll to this folder and name it goldberg.dll")
-            log(str(e), type="error")
-            sys.exit(0)
+        if not DownloadGoldberg("goldberg.dll"):
+            log("failed to download goldberg! mod can't start without a steam emulator")
+            log("The error was dumped into the logs")
+            log(
+                "if you wish you can manually download goldberg from https://mr_goldberg.gitlab.io/goldberg_emulator/ \nopen the zip and extract 'steam_api.dll' to this folder and rename it goldberg.dll"
+            )
+            return False
 
-        log("downloaded goldberg")
+    log("goldberg is downloaded")
 
     shutil.copyfile("goldberg.dll", outputPath + "bin/steam_api.dll")
     sizeTracker += os.path.getsize("goldberg.dll")
 
     os.makedirs(outputPath + "bin/steam_settings")
 
+    # todo: figure out what this is meant to be
     # f = open(outputPath + "bin/steam_settings/offline.txt", "w", encoding="utf-8")
-    # f.close()
 
     # Server account name
     WriteToFile(outputPath + "bin/steam_settings/force_account_name.txt", "Console")
     # Server account id
-    WriteToFile(outputPath + "bin/steam_settings/force_steamid.txt", "69696969696969696")
+    WriteToFile(
+        outputPath + "bin/steam_settings/force_steamid.txt", "69696969696969696"
+    )
 
+    log("server built successfully")
     log("Final Size: " + ConvertBytesSize(sizeTracker))
+    return True
