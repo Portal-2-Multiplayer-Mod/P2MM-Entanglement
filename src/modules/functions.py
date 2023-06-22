@@ -230,13 +230,18 @@ def DownloadFile(url:str, downloadPath:str) -> bool:
     return False
 
 # * we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
-def DownloadGoldberg(outputPath: str = "steam_api.dll") -> None:
+def DownloadGoldberg(outputPath: str = "steam_api.dll") -> bool:
     """simply downloads goldberg
 
     Parameters
     ----------
     outputPath : str, optional
-        by default "steam_api.dll"
+        where to extract 'steam_api.dll', by default "steam_api.dll"
+
+    Returns
+    -------
+    bool
+        the download status, true if successful, false if failed
     """
 
     downloadFolder = "pydowntemp"
@@ -254,7 +259,7 @@ def DownloadGoldberg(outputPath: str = "steam_api.dll") -> None:
 
     if not isDownloaded:
         log("there was an issue downloading goldburg, please read the logs")
-        return
+        return False
 
     with zipfile.ZipFile(downloadPath) as zip_ref:
         zip_ref.extractall(downloadFolder)
@@ -264,14 +269,58 @@ def DownloadGoldberg(outputPath: str = "steam_api.dll") -> None:
 
     shutil.copy(downloadFolder + "/steam_api.dll", outputPath)
     shutil.rmtree(downloadFolder)
+    return True
 
 
 def ReadFile(fileName: str, mode: str = "r", _encoding="utf-8") -> str:
+    """Returns the content of a file as a string
+
+    Parameters
+    ----------
+    fileName : str
+        absolute path to the file
+    mode : str, optional
+        read mode, by default "r"
+    _encoding : str, optional
+        read encoding to use, by default "utf-8"
+
+    Returns
+    -------
+    str
+        content of the file
+    """
+
+    #* binary mode doesn't take encoding parameter
+    if mode.endswith("b"):
+        with open(fileName, mode) as f:
+            return f.read()
+
     with open(fileName, mode, encoding=_encoding) as f:
         return f.read()
 
 
+
 def WriteToFile(fileName: str, text: str, mode: str = "w", _encoding="utf-8") -> None:
+    """Writes to the specified file
+
+    Parameters
+    ----------
+    fileName : str
+        absolute path to the file
+    text : str
+        text to write
+    mode : str, optional
+        write mode, by default "w"
+    _encoding : str, optional
+        write encoding to use, by default "utf-8"
+    """
+
+    #* binary mode doesn't take encoding parameter
+    if mode.endswith("b"):
+        with open(fileName, mode) as f:
+            f.write(text)
+        return
+
     with open(fileName, mode, encoding=_encoding) as f:
         f.write(text)
 
