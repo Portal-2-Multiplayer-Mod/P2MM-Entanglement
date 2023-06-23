@@ -9,7 +9,7 @@ import os, platform, subprocess
 system = ""
 python = "python"
 
-def print_color(text, color):
+def print_color(text, color= "white"):
     colors = {
         'black': '\033[30m',
         'red': '\033[31m',

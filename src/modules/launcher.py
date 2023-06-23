@@ -134,7 +134,7 @@ def LaunchGame(
     builtServerDir: str = BuiltServerPath,
     rconLocalPassword: str = None,
     launchArgs: str = None,
-) -> subprocess.Popen[bytes]:
+) -> subprocess.Popen[bytes] | None:
     """Starts portal 2
 
     Parameters
@@ -229,7 +229,8 @@ def LaunchGame(
 
         try:
             signal.signal(signal.SIGINT, sigint_handler)
-        except:
+        except Exception as e:
+            print(str(e))
             pass
 
         # hide the window after it opens
