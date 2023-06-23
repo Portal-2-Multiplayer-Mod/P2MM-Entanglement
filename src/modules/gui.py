@@ -2,6 +2,7 @@ import sys, os, threading, subprocess
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from time import sleep
+from qt_material import apply_stylesheet
 
 from modules.exportedui import Ui_MainWindow
 import modules.launcher as launcher
@@ -139,6 +140,8 @@ def Main():
     global Ui
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('Fusion')
+    apply_stylesheet(app, theme='p2mm.xml')
     MainWindow = QtWidgets.QWidget()
     Ui = Ui_MainWindow()
     Ui.setupUi(MainWindow)
