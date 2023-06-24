@@ -253,7 +253,7 @@ def DownloadGoldberg(outputPath: str = "steam_api.dll") -> bool:
     os.mkdir(downloadFolder)
 
     isDownloaded = DownloadFile(
-        "https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/2524331e488ec6399c396cf48bbe9903/Goldberg_Lan_Steam_Emu_v0.2.5.zip",
+        "https://github.com/Portal-2-Multiplayer-Mod/P2MM-Goldberg/releases/latest/download/steam_api.dll",
         downloadPath,
     )
 
