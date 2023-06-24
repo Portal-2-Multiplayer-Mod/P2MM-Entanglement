@@ -119,23 +119,4 @@ def download_file(url, local_filename):
 
 #* we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
 def downloadgoldberg(outputpath = "steam_api.dll"):
-    downloadfolder = "pydowntemp"
-    downloadPath = downloadfolder+"/goldberg.zip"
-    
-    if os.path.exists(downloadfolder):
-        shutil.rmtree(downloadfolder)
-        
-    os.mkdir(downloadfolder)
-    urllib.request.urlretrieve("https://gitlab.com/Mr_Goldberg/goldberg_emulator/uploads/2524331e488ec6399c396cf48bbe9903/Goldberg_Lan_Steam_Emu_v0.2.5.zip", downloadPath)
-    
-    if os.path.exists(downloadPath):
-        log("file exist")
-
-    with zipfile.ZipFile(downloadPath, 'r') as zip_ref:
-        zip_ref.extractall(downloadfolder)
-        
-    if os.path.exists("steam_api.dll"):
-        os.remove("steam_api.dll")
-        
-    shutil.copy(downloadfolder+"/steam_api.dll", outputpath)
-    shutil.rmtree(downloadfolder)
+    urllib.request.urlretrieve("https://github.com/Portal-2-Multiplayer-Mod/P2MM-Goldberg/releases/latest/download/steam_api.dll", outputpath)
