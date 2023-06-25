@@ -3,6 +3,7 @@
 .vscode/
 /__pycache__
 src/.builtserver/
+src/.builtserver.*/
 *.pyc
 *.pyc
 src/goldberg.dll
