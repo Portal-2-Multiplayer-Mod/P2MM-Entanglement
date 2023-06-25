@@ -122,7 +122,7 @@ def BuildServer(
     if not os.path.isfile("goldberg.dll"):
         log("downloading goldberg...")
 
-        if not DownloadGoldberg("goldberg.dll"):
+        if not DownloadGoldberg():
             log("failed to download goldberg! mod can't start without a steam emulator")
             log("The error was dumped into the logs")
             log(

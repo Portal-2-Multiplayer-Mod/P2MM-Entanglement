@@ -230,13 +230,13 @@ def DownloadFile(url:str, downloadPath:str) -> bool:
     return False
 
 # * we need a way to download the latest version of the goldberg emulator https://mr_goldberg.gitlab.io/
-def DownloadGoldberg(outputPath: str = "steam_api.dll") -> bool:
+def DownloadGoldberg(outputPath: str = "goldberg.dll") -> bool:
     """simply downloads goldberg
 
     Parameters
     ----------
     outputPath : str, optional
-        where to extract 'steam_api.dll', by default "steam_api.dll"
+        where to extract 'steam_api.dll', by default "goldberg.dll"
 
     Returns
     -------
@@ -244,13 +244,7 @@ def DownloadGoldberg(outputPath: str = "steam_api.dll") -> bool:
         the download status, true if successful, false if failed
     """
 
-    downloadFolder = "pydowntemp"
-    downloadPath = downloadFolder + "/goldberg.zip"
-
-    if os.path.exists(downloadFolder):
-        shutil.rmtree(downloadFolder)
-
-    os.mkdir(downloadFolder)
+    downloadPath = outputPath
 
     isDownloaded = DownloadFile(
         "https://github.com/Portal-2-Multiplayer-Mod/P2MM-Goldberg/releases/latest/download/steam_api.dll",
@@ -261,14 +255,6 @@ def DownloadGoldberg(outputPath: str = "steam_api.dll") -> bool:
         log("there was an issue downloading goldburg, please read the logs")
         return False
 
-    with zipfile.ZipFile(downloadPath) as zip_ref:
-        zip_ref.extractall(downloadFolder)
-
-    if os.path.exists("steam_api.dll"):
-        os.remove("steam_api.dll")
-
-    shutil.copy(downloadFolder + "/steam_api.dll", outputPath)
-    shutil.rmtree(downloadFolder)
     return True
 
 
