@@ -1,45 +1,49 @@
+import sys, os, threading, subprocess
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from modules.exportedui import Ui_MainWindow
-import sys, os
-import threading, ctypes
-import modules.launcher as launcher
-import modules.functions as functions
-from modules.logging import log
-from modules.logging import getnewlines
 from time import sleep
-import multiprocessing
 from qt_material import apply_stylesheet
 
-def terminate(): # we need something to terminate the whole file in the case of a fault
-    launcher.handlelockfile(True)
+from modules.exportedui import Ui_MainWindow
+import modules.launcher as launcher
+import modules.functions as fn
+from modules.logging import GetNewLines
+from modules.logging import log
+
+
+# we need something to terminate the whole file in the case of a fault
+def terminate():
+    launcher.HandleLockFile(True)
     sys.exit(0)
 
+
 class NewlineThread(threading.Thread):
-    curgloballine = 0
+    CurGlobalLine: int = 0
 
     def run(self):
-        global ui
-        if os.path.exists(launcher.bsdir + "portal2" + os.sep + "console.log"):
-            os.remove(launcher.bsdir + "portal2" + os.sep + "console.log")
+        global Ui
+        if os.path.exists(
+            launcher.BuiltServerPath + "portal2" + os.sep + "console.log"
+        ):
+            os.remove(launcher.BuiltServerPath + "portal2" + os.sep + "console.log")
 
-        scrollbar = ui.console_output.verticalScrollBar()
+        scrollbar = Ui.console_output.verticalScrollBar()
         while True:
-            output = getnewlines(self.curgloballine)
-            self.curgloballine = output[1]
+            output = GetNewLines(self.CurGlobalLine)
+            self.CurGlobalLine = output[1]
             newlines = output[0]
 
             # jankily append console newlines to newlines
-            if launcher.gameisrunning:
-                for line in launcher.getnewconsolelines(launcher.confilepath): newlines.append(line)
-
+            if launcher.IsGameRunning:
+                for line in launcher.GetNewConsoleLines(launcher.P2ConsoleLogPath):
+                    newlines.append(line)
 
             is_at_bottom = False
 
             if len(newlines) > 0:
                 is_at_bottom = scrollbar.value() >= scrollbar.maximum() - 60
                 # if ui.console_output.toPlainText() == "":
-                ui.console_output.append("\n".join(newlines))
+                Ui.console_output.append("\n".join(newlines))
                 # else:
                 #     ui.console_output.append("\n" + "\n".join(newlines))
                 if is_at_bottom:
@@ -53,114 +57,139 @@ class NewlineThread(threading.Thread):
             #     if is_at_bottom:
             #         scrollbar.setValue(scrollbar.maximum())
 
-            sleep(0.1) # we need to have a delay or else it fills up the loggers function calls
+            sleep(
+                0.1
+            )  # we need to have a delay or else it fills up the loggers function calls
 
-class LaunchThread(threading.Thread):
+
+class GameThread(threading.Thread):
+    """Holds the game's process"""
+
+    GameProcess: subprocess.Popen[bytes] | None
+
     def run(self):
-        global heldproc
         # target function of the thread class
-        heldproc = launcher.launchgame(rconpasswdlocal=functions.rconpasswd)
-        ui.start_button.setText("Stop")
-        ui.start_button.setEnabled(True)
+        self.GameProcess = launcher.LaunchGame(rconLocalPassword=fn.rconPassword)
+        Ui.start_button.setEnabled(True)
+        self.OnAfterThreadRun()
 
-launcherthread = None
+    def OnAfterThreadRun(self):
+        if gameThread.GameProcess is not None:
+            Ui.start_button.clicked.disconnect(StartGame)
+            Ui.start_button.clicked.connect(TerminateGame)
+            Ui.start_button.setText("Stop")
+        else:
+            Ui.start_button.setText("Start")
 
-heldproc = None
 
-def stop_game():
-    global launcherthread
-    global heldproc
-    ui.start_button.setText("Stopping...")
-    ui.start_button.setEnabled(False)
+gameThread: GameThread
+CommandListPos: int
+Ui: Ui_MainWindow
+
+
+def __init():
+    global gameThread, CommandListPos, Ui
+
+    gameThread = None
+    CommandListPos = -1
+
+
+def TerminateGame():
+    global gameThread
+    Ui.start_button.setText("Stopping...")
+    Ui.start_button.setEnabled(False)
     # try:
     #     heldproc.terminate()
     # except:
     #     pass
-    launcher.handlelockfile(True)
-    ui.start_button.setText("Start")
-    ui.start_button.clicked.disconnect(stop_game)
-    ui.start_button.clicked.connect(launch_game)
-    ui.start_button.setEnabled(True)
+    launcher.HandleLockFile(True)
+    Ui.start_button.setText("Start")
+    Ui.start_button.clicked.disconnect(TerminateGame)
+    Ui.start_button.clicked.connect(StartGame)
+    Ui.start_button.setEnabled(True)
 
-def launch_game():
-    global launcherthread
-    launcherthread = LaunchThread()
-    launcherthread.daemon = True
-    launcherthread.start()
-    ui.console_output.setText("")
-    launcher.curconsoleline = 0
-    ui.start_button.setText("Game Is Starting...")
-    ui.start_button.setEnabled(False)
-    ui.start_button.clicked.disconnect(launch_game)
-    ui.start_button.clicked.connect(stop_game)
 
-commandlistpos = -1
-def send_rcon():
-    global commandlistpos
-    if launcher.gameisrunning and launcher.RconReady:
-        text = ui.command_line.text()
-        output = functions.sendrcon(text, functions.rconpasswd, hist=True)
-        ui.command_line.setText("")
-        commandlistpos = -1
+def StartGame():
+    global gameThread
+    gameThread = GameThread()
+    gameThread.daemon = True
+    gameThread.start()
+    Ui.console_output.setText("")
+    launcher.CurConsoleLine = 0
+    Ui.start_button.setText("Game Is Starting...")
+    Ui.start_button.setEnabled(False)
+
+
+
+def SendRcon():
+    global CommandListPos
+    if launcher.IsGameRunning and launcher.IsRconReady:
+        text = Ui.command_line.text()
+        output = fn.SendRcon(text, fn.rconPassword, hist=True)
+        Ui.command_line.setText("")
+        CommandListPos = -1
         if len(output.strip()) > 0:
             log(output.strip(), "rcon")
-    elif launcher.gameisrunning:
+    elif launcher.IsGameRunning:
         log("user attempted to send command before rcon was ready")
     else:
         log("user attempted to send command while game is closed")
 
-ui = None
-def gui_main():
-    global ui
+
+def Main():
+    global Ui
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
     apply_stylesheet(app, theme='p2mm.xml')
     MainWindow = QtWidgets.QWidget()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
+    Ui = Ui_MainWindow()
+    Ui.setupUi(MainWindow)
 
-    newlinethread = NewlineThread()
-    newlinethread.daemon = True
-    newlinethread.start()
+    newlineThread = NewlineThread()
+    newlineThread.daemon = True
+    newlineThread.start()
 
     ### UI LINKING
 
-    def handle_key_press(event): # cycle previous commands when arrows are pressed
-        global commandlistpos
+    def handle_key_press(event):  # cycle previous commands when arrows are pressed
+        global CommandListPos
         if event.key() == Qt.Key_Up:
-            if len(functions.userrconhist) == 0:
-                commandlistpos = -1
+            if len(fn.UserRconHist) == 0:
+                CommandListPos = -1
                 return
 
-            commandlistpos += 1
-            if commandlistpos > len(functions.userrconhist) - 1:
-                commandlistpos = len(functions.userrconhist) - 1
+            CommandListPos += 1
+            if CommandListPos > len(fn.UserRconHist) - 1:
+                CommandListPos = len(fn.UserRconHist) - 1
 
-            ui.command_line.setText(functions.userrconhist[commandlistpos])
+            Ui.command_line.setText(fn.UserRconHist[CommandListPos])
         elif event.key() == Qt.Key_Down:
-            if len(functions.userrconhist) == 0:
-                commandlistpos = -1
+            if len(fn.UserRconHist) == 0:
+                CommandListPos = -1
                 return
 
-            commandlistpos -= 1
-            if commandlistpos < 0:
-                ui.command_line.setText("")
-                commandlistpos = -1
+            CommandListPos -= 1
+            if CommandListPos < 0:
+                Ui.command_line.setText("")
+                CommandListPos = -1
                 return
 
-            ui.command_line.setText(functions.userrconhist[commandlistpos])
+            Ui.command_line.setText(fn.UserRconHist[CommandListPos])
         else:
             # allow the widget to process other key events normally
-            QtWidgets.QLineEdit.keyPressEvent(ui.command_line, event)
+            QtWidgets.QLineEdit.keyPressEvent(Ui.command_line, event)
 
-    ui.send_button.clicked.connect(send_rcon)
-    ui.command_line.returnPressed.connect(send_rcon)
-    ui.command_line.keyPressEvent = handle_key_press
+    Ui.send_button.clicked.connect(SendRcon)
+    Ui.command_line.returnPressed.connect(SendRcon)
+    Ui.command_line.keyPressEvent = handle_key_press
 
-    ui.start_button.clicked.connect(launch_game)
+    Ui.start_button.clicked.connect(StartGame)
 
     ###
     MainWindow.show()
     app.exec_()
     terminate()
+
+
+__init()
