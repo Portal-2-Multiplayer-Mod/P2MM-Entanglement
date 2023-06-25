@@ -28,16 +28,11 @@ if System == "windows":
     # * pip install pywin32
     import win32gui
 
-    gamePath = "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2\\"
+    gamePath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2"
+    if not gamePath.endswith(os.sep): gamePath = gamePath + os.sep
 
 elif System == "linux":
     gamePath = os.path.expanduser("~/.local/share/Steam/steamapps/common/Portal 2/")
-
-
-# i have this variable outside of its respective function as the enumWindows function appears not to be able to handle global imports from local functions
-#! THIS VARIABLE ISN'T EVEN USED ANYWHERE
-gamehidden: int = 0
-
 
 def CreateLockFile(pid: int) -> None:
     global IsGameRunning

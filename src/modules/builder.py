@@ -63,8 +63,6 @@ def BuildServer(
         shutil.rmtree(outputPath)
     os.mkdir(outputPath)
 
-    sizeTracker = 0
-
     def patchFileRoutine(file):
         if not os.path.exists(outputPath + os.path.dirname(file)):
             os.makedirs(outputPath + os.path.dirname(file))
@@ -103,7 +101,6 @@ def BuildServer(
                     if not os.path.exists(outputPath + os.path.dirname(file)):
                         os.makedirs(outputPath + os.path.dirname(file))
                     if not os.path.exists(modFilesPath + file):
-                        sizeTracker += os.path.getsize(gamePath + file)
                         shutil.copyfile(gamePath + file, outputPath + file)
 
         else:
@@ -136,7 +133,6 @@ def BuildServer(
     log("goldberg is downloaded")
 
     shutil.copyfile("goldberg.dll", outputPath + "bin/steam_api.dll")
-    sizeTracker += os.path.getsize("goldberg.dll")
 
     os.makedirs(outputPath + "bin/steam_settings")
 
@@ -151,5 +147,4 @@ def BuildServer(
     )
 
     log("server built successfully")
-    log("Final Size: " + ConvertBytesSize(sizeTracker))
     return True
