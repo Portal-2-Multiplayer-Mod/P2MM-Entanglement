@@ -1,5 +1,5 @@
 import sys, os, threading, subprocess
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from time import sleep
 from qt_material import apply_stylesheet
@@ -62,29 +62,20 @@ class NewlineThread(threading.Thread):
             )  # we need to have a delay or else it fills up the loggers function calls
 
 
-class GameThread(threading.Thread):
+class GameThread(QtCore.QThread):
     """Holds the game's process"""
 
     GameProcess: subprocess.Popen[bytes] | None
-
+    OnAfterRun = QtCore.pyqtSignal(subprocess.Popen)
     def run(self):
         # target function of the thread class
         self.GameProcess = launcher.LaunchGame(rconLocalPassword=fn.rconPassword)
-        Ui.start_button.setEnabled(True)
-        self.OnAfterThreadRun()
-
-    def OnAfterThreadRun(self):
-        if gameThread.GameProcess is not None:
-            Ui.start_button.clicked.disconnect(StartGame)
-            Ui.start_button.clicked.connect(TerminateGame)
-            Ui.start_button.setText("Stop")
-        else:
-            Ui.start_button.setText("Start")
-
+        self.OnAfterRun.emit(self.GameProcess)
 
 gameThread: GameThread
 CommandListPos: int
 Ui: Ui_MainWindow
+
 
 
 def __init():
@@ -94,7 +85,19 @@ def __init():
     CommandListPos = -1
 
 
-def TerminateGame():
+def OnAfterGameThreadRun() -> None:
+    """Runs after the game thread is executed and checks for the status of the server"""
+
+    if gameThread.GameProcess is not None:
+        Ui.start_button.clicked.disconnect(StartGame)
+        Ui.start_button.clicked.connect(TerminateGame)
+        Ui.start_button.setText("Stop")
+    else:
+        Ui.start_button.setText("Start")
+
+    Ui.start_button.setEnabled(True)
+
+def TerminateGame() -> None:
     global gameThread
     Ui.start_button.setText("Stopping...")
     Ui.start_button.setEnabled(False)
@@ -109,19 +112,19 @@ def TerminateGame():
     Ui.start_button.setEnabled(True)
 
 
-def StartGame():
+def StartGame() -> None:
     global gameThread
     gameThread = GameThread()
-    gameThread.daemon = True
+    gameThread.OnAfterRun.connect(OnAfterGameThreadRun)
+    # gameThread.daemon = True
     gameThread.start()
     Ui.console_output.setText("")
     launcher.CurConsoleLine = 0
-    Ui.start_button.setText("Game Is Starting...")
     Ui.start_button.setEnabled(False)
+    Ui.start_button.setText("Game Is Starting...")
 
 
-
-def SendRcon():
+def SendRcon() -> None:
     global CommandListPos
     if launcher.IsGameRunning and launcher.IsRconReady:
         text = Ui.command_line.text()
@@ -136,7 +139,7 @@ def SendRcon():
         log("user attempted to send command while game is closed")
 
 
-def Main():
+def Main() -> None:
     global Ui
 
     app = QtWidgets.QApplication(sys.argv)
