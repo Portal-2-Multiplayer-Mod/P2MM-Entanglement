@@ -28,7 +28,7 @@ if System == "windows":
     # * pip install pywin32
     import win32gui
 
-    gamePath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2"
+    gamePath = "d:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2"
     if not gamePath.endswith(os.sep): gamePath = gamePath + os.sep
 
 elif System == "linux":

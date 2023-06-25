@@ -131,6 +131,9 @@ def __CreateSymlink(original: str, new: str) -> None:
         path of the link
     """
 
+    if not os.path.exists(os.path.dirname(new)):
+            os.makedirs(os.path.dirname(new))
+
     if GetSystem() == "linux":
         os.symlink(original, new)
 
