@@ -2,7 +2,7 @@
     Has common functions that we use repeatedly throughout the project
 """
 
-import os, shutil, zipfile, platform, subprocess, socket, string, random, urllib.request
+import os, platform, subprocess, socket, string, random, urllib.request
 from rcon.source import Client
 from modules.logging import log
 
@@ -261,7 +261,7 @@ def DownloadGoldberg(outputPath: str = "goldberg.dll") -> bool:
     return True
 
 
-def ReadFile(fileName: str, mode: str = "r", _encoding="utf-8") -> str:
+def ReadFile(fileName: str, mode: str = "r", _encoding="utf-8") -> str | None:
     """Returns the content of a file as a string
 
     Parameters
@@ -279,6 +279,9 @@ def ReadFile(fileName: str, mode: str = "r", _encoding="utf-8") -> str:
         content of the file
     """
 
+    if not os.path.exists(fileName):
+        return None
+
     #* binary mode doesn't take encoding parameter
     if mode.endswith("b"):
         with open(fileName, mode) as f:
@@ -289,15 +292,15 @@ def ReadFile(fileName: str, mode: str = "r", _encoding="utf-8") -> str:
 
 
 
-def WriteToFile(fileName: str, text: str, mode: str = "w", _encoding="utf-8") -> None:
+def WriteToFile(fileName: str, data: str | list[str], mode: str = "w", _encoding="utf-8") -> None:
     """Writes to the specified file
 
     Parameters
     ----------
     fileName : str
         absolute path to the file
-    text : str
-        text to write
+    data : str | list[str]
+        data to write
     mode : str, optional
         write mode, by default "w"
     _encoding : str, optional
@@ -307,11 +310,37 @@ def WriteToFile(fileName: str, text: str, mode: str = "w", _encoding="utf-8") ->
     #* binary mode doesn't take encoding parameter
     if mode.endswith("b"):
         with open(fileName, mode) as f:
-            f.write(text)
+            f.write(data)
         return
 
     with open(fileName, mode, encoding=_encoding) as f:
-        f.write(text)
+        if type(data) is list:
+            f.writelines(data)
+        else:
+            f.write(data)
 
+
+def ConvertValue(value: any, desiredType: type) -> any:
+    if desiredType is bool:
+
+        if type(value) is str:
+            if value.lower() in ["true", "yes"]:
+                return True
+            elif value.lower() in ["false", "no"]:
+                return False
+
+        if type(value) is int:
+            if value > 0:
+                return True
+            else:
+                return False
+
+
+    try:
+        return desiredType(value)
+    except:
+        pass
+
+    return None
 
 __init()

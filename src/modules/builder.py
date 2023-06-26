@@ -1,9 +1,13 @@
 # * PURPOSE: take a pre-existing portal 2 and strip it down into a dedicated
 # * server-like environment that run's headlessly and without a steam account
 
-import os, time, shutil, math
+import os
+import time
+import shutil
+import math
 from modules.functions import *
 from modules.logging import log
+import modules.Configs as cfg
 
 
 def ConvertBytesSize(bytesSize: int) -> str:
@@ -31,9 +35,7 @@ def ConvertBytesSize(bytesSize: int) -> str:
     return "%s %s" % (s, size_name[i])
 
 
-def BuildServer(
-    gamePath: str, modFilesPath: str, outputPath: str, isSoftBuild: bool = True
-) -> bool:
+def BuildServer(modFilesPath: str, outputPath: str, isSoftBuild: bool = True) -> bool:
     """Builds the local server (symlinks the files and downloads goldburg)
 
     Parameters
@@ -52,8 +54,13 @@ def BuildServer(
     bool
         status of the build, true id successful, false if failed (check logs)
     """
+    gamePath: str = cfg.GetValue(cfg.Configs.GamePath)
 
-    filesList = ReadFile("gamefiles.txt").strip().replace("/", os.sep).split("\n")
+    if not gamePath.endswith(os.sep):
+        gamePath = gamePath + os.sep
+
+    filesList = ReadFile("gamefiles.txt").strip().replace(
+        "/", os.sep).split("\n")
 
     # * create whatever paths need to exist
     if not os.path.exists(gamePath):
@@ -140,7 +147,8 @@ def BuildServer(
     # f = open(outputPath + "bin/steam_settings/offline.txt", "w", encoding="utf-8")
 
     # Server account name
-    WriteToFile(outputPath + "bin/steam_settings/force_account_name.txt", "Console")
+    WriteToFile(
+        outputPath + "bin/steam_settings/force_account_name.txt", "Console")
     # Server account id
     WriteToFile(
         outputPath + "bin/steam_settings/force_steamid.txt", "69696969696969696"

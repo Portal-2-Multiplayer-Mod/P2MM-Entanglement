@@ -61,7 +61,7 @@ class NewlineThread(threading.Thread):
                 0.1
             )  # we need to have a delay or else it fills up the loggers function calls
 
-
+# https://stackoverflow.com/a/73773611/12429279
 class GameThread(QtCore.QThread):
     """Holds the game's process"""
 
@@ -75,8 +75,6 @@ class GameThread(QtCore.QThread):
 gameThread: GameThread
 CommandListPos: int
 Ui: Ui_MainWindow
-
-
 
 def __init():
     global gameThread, CommandListPos, Ui

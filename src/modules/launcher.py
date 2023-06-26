@@ -16,23 +16,18 @@ RconPort: int = 3280
 P2ConsoleLogPath: str = BuiltServerPath + "portal2" + os.sep + "console.log"
 CurConsoleLine: int = 0
 System: str = GetSystem()
-
-if System == "darwin":
-    log(
-        "We do not support MacOS, nor do we plan to. However, you can still join other P2MM servers from a mac client."
-    )
-    exit(0)
+gamePath: str
 
 # todo: make the game path configurable
 if System == "windows":
     # * pip install pywin32
     import win32gui
 
-    gamePath = "d:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2"
-    if not gamePath.endswith(os.sep): gamePath = gamePath + os.sep
+#     gamePath = cfg.GetValue(cfg.Configs.GamePath)
+#     if not gamePath.endswith(os.sep): gamePath = gamePath + os.sep
 
-elif System == "linux":
-    gamePath = os.path.expanduser("~/.local/share/Steam/steamapps/common/Portal 2/")
+# elif System == "linux":
+#     gamePath = os.path.expanduser("~/.local/share/Steam/steamapps/common/Portal 2/")
 
 def CreateLockFile(pid: int) -> None:
     global IsGameRunning
@@ -164,7 +159,7 @@ def LaunchGame(
     # clean up any possible zombie instances
     HandleLockFile()
 
-    if not BuildServer(gamePath, "modfiles/", builtServerDir):
+    if not BuildServer("modfiles/", builtServerDir):
         return
 
     # launch the game
