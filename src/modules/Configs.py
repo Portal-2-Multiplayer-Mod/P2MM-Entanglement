@@ -5,102 +5,103 @@ import modules.functions as fn
 #! do not call any function / variable that starts with "__" outside of this file
 
 
+class ConfigProperties(Enum):
+    GamePath = "GamePath"
+    CheckUpdateOnStart = "CheckUpdateOnStart"
+    Timeout = "Timeout"
+
+
 class ConfigModel():
     Label: str
     Type: type
     Hint: str
-    __Value: any
 
-    def __init__(self, label: str, type: type, hint: str, defaultValue: any):
+    def __init__(self, label: str, type: type, hint: str):
         self.Label = label
         self.Type = type
         self.Hint = hint
-        self.SetValue(defaultValue)
-
-    def SetValue(self, value: any) -> None:
-        value = fn.ConvertValue(value, self.Type)
-        if value is None:
-            raise TypeError(f"cannot convert {type(value)} to {self.Type}")
-        self.__Value = value
-
-    def GetValue(self) -> any:
-        return self.__Value
 
 
-class Configs(Enum):
-    GamePath = "GamePath"
-    CheckUpdateOnStart = "CheckUpdateOnStart"
-
-
-__defaultConfig: dict[Configs, ConfigModel] = {
-    Configs.GamePath:
-        ConfigModel("portal 2 path", str, "the folder where p2 is installed",
-                    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2"),
-    Configs.CheckUpdateOnStart:
-        ConfigModel("do you want to check for updates on start up?", bool,
-                    "if enabled checks for update when the launcher opens", True)
+DefaultConfigModel: dict[ConfigProperties, ConfigModel] = {
+    ConfigProperties.GamePath:
+        ConfigModel("portal 2 path", str, "the folder where p2 is installed"),
+    ConfigProperties.CheckUpdateOnStart:
+        ConfigModel("do you want to check for updates on start up?",
+                    bool, "if enabled checks for update when the launcher opens"),
+    ConfigProperties.Timeout:
+        ConfigModel("timeout?",
+                    int, "timeout :D"),
 }
 
-Data: dict[Configs, ConfigModel] = __defaultConfig
+DefaultData: dict[ConfigProperties, any] = {
+    ConfigProperties.GamePath: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Portal 2",
+    ConfigProperties.CheckUpdateOnStart: True,
+    ConfigProperties.Timeout: 2,
+}
+
+UserData: dict[ConfigProperties, any] = DefaultData
 
 
-def __CreateNewConfigFile():
-    configs: list[str] = []
-
-    for config in Configs:
-        configs.append(f"{config.value} = {GetDefaultValue(config)}\n")
-
-    fn.WriteToFile(__GetConfigFilePath(), configs)
-
-
-def LoadConfigs():
+def LoadConfigs() -> None:
     #! ONLY CALLED ONCE IN MAIN
 
-    if not os.path.exists(__GetConfigFilePath()):
-        __CreateNewConfigFile()
+    if not os.path.exists(__GetConfigsFilePath()):
+        __SaveConfigs(DefaultData)
         return
 
-    data: list[str] = fn.ReadFile(__GetConfigFilePath()).split("\n")
-
-    if data is None:
-        __CreateNewConfigFile()
-        return
+    data: list[str] = fn.ReadFile(__GetConfigsFilePath()).split("\n")
+    errors = 0
 
     for line in data:
         line = line.strip().split("=")
         config = __GetEnumByName(line[0].strip())
-        if config is None:
+        if config is None or line[1].strip() == "":
+            errors += 1
             continue
-        Data[config].SetValue(line[1].strip())
+        SetValue(config, line[1].strip(), False)
 
-def __GetEnumByName(name:str) -> Configs | None:
-    for enum in Configs:
+    if errors > 0:
+        __SaveConfigs()
+
+
+def __GetEnumByName(name: str) -> ConfigProperties | None:
+    for enum in ConfigProperties:
         if enum.value == name:
             return enum
     return None
 
-def __SaveConfigs():
+
+def __SaveConfigs(data: dict[ConfigProperties, any] = UserData) -> None:
     configs: list[str] = []
 
-    for config in Configs:
-        configs.append(f"{config.value} = {GetValue(config)}\n")
+    for config in ConfigProperties:
+        configs.append(f"{config.value} = {GetValue(config, data)}\n")
 
-    fn.WriteToFile(__GetConfigFilePath(), configs)
+    fn.WriteToFile(__GetConfigsFilePath(), configs)
 
 
-def __GetConfigFilePath() -> str:
+def __GetConfigsFilePath() -> str:
     return "config.cfg"
 
 
-def GetDefaultValue(config: Configs) -> any:
-    return __defaultConfig[config].GetValue()
+def GetValue(config: ConfigProperties, data=UserData) -> any:
+    return data[config]
 
 
-def GetValue(config: Configs) -> any:
-    return Data[config].GetValue()
+def GetDefaultValue(config: ConfigProperties) -> any:
+    return DefaultData[config]
 
 
-def SetValue(config: Configs, value: any) -> None:
-    Data[config].SetValue(value)
-    __SaveConfigs()
+def GetConfigType(config: ConfigProperties) -> type:
+    return DefaultConfigModel[config].Type
 
+
+def SetValue(config: ConfigProperties, value: any, shouldSave: bool = True) -> None:
+    value = fn.ConvertValue(value, GetConfigType(config))
+    if value is None:
+        # todo: global error handler and an error popup
+        raise TypeError(
+            f"cannot convert {type(value)} to {GetConfigType(config)}")
+    UserData[config] = value
+    if shouldSave:
+        __SaveConfigs()

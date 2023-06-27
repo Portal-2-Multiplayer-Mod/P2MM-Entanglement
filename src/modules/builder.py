@@ -54,7 +54,7 @@ def BuildServer(modFilesPath: str, outputPath: str, isSoftBuild: bool = True) ->
     bool
         status of the build, true id successful, false if failed (check logs)
     """
-    gamePath: str = cfg.GetValue(cfg.Configs.GamePath)
+    gamePath: str = cfg.GetValue(cfg.ConfigProperties.GamePath)
 
     if not gamePath.endswith(os.sep):
         gamePath = gamePath + os.sep
