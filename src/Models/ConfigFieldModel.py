@@ -70,6 +70,7 @@ class ConfigFieldModel(QtWidgets.QWidget):
         elif customType is bool:
             Value = QtWidgets.QCheckBox(self)
             Value.text = ""
+            Value.setChecked(value)
         else:
             Value = QtWidgets.QLineEdit(self)
             Value.setText(value)
