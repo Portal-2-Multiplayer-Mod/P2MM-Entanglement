@@ -1,4 +1,7 @@
-import sys, os, threading, subprocess
+import sys
+import os
+import threading
+import subprocess
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from time import sleep
@@ -9,6 +12,7 @@ import modules.launcher as launcher
 import modules.functions as fn
 from modules.logging import GetNewLines
 from modules.logging import log
+import modules.Configs as cfg
 
 
 # we need something to terminate the whole file in the case of a fault
@@ -25,7 +29,8 @@ class NewlineThread(threading.Thread):
         if os.path.exists(
             launcher.BuiltServerPath + "portal2" + os.sep + "console.log"
         ):
-            os.remove(launcher.BuiltServerPath + "portal2" + os.sep + "console.log")
+            os.remove(launcher.BuiltServerPath +
+                      "portal2" + os.sep + "console.log")
 
         scrollbar = Ui.console_output.verticalScrollBar()
         while True:
@@ -62,19 +67,25 @@ class NewlineThread(threading.Thread):
             )  # we need to have a delay or else it fills up the loggers function calls
 
 # https://stackoverflow.com/a/73773611/12429279
+
+
 class GameThread(QtCore.QThread):
     """Holds the game's process"""
 
     GameProcess: subprocess.Popen[bytes] | None
     OnAfterRun = QtCore.pyqtSignal(subprocess.Popen)
+
     def run(self):
         # target function of the thread class
-        self.GameProcess = launcher.LaunchGame(rconLocalPassword=fn.rconPassword)
+        self.GameProcess = launcher.LaunchGame(
+            rconLocalPassword=fn.rconPassword)
         self.OnAfterRun.emit(self.GameProcess)
+
 
 gameThread: GameThread
 CommandListPos: int
 Ui: Ui_MainWindow
+
 
 def __init():
     global gameThread, CommandListPos, Ui
@@ -94,6 +105,7 @@ def OnAfterGameThreadRun() -> None:
         Ui.start_button.setText("Start")
 
     Ui.start_button.setEnabled(True)
+
 
 def TerminateGame() -> None:
     global gameThread
@@ -137,21 +149,32 @@ def SendRcon() -> None:
         log("user attempted to send command while game is closed")
 
 
+def AddConfigToUi() -> None:
+    from Models.ConfigFieldModel import ConfigFieldModel
+
+    for config in cfg.ConfigProperties:
+        # Ui.verticalLayout_5.addWidget(ConfigFieldModel())
+        Ui.verticalLayout_5.addWidget(ConfigFieldModel(cfg.GetName(config),cfg.GetHint(config), cfg.GetValue(config), cfg.GetType(config)))
+
+
 def Main() -> None:
     global Ui
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
     apply_stylesheet(app, theme='p2mm.xml')
+
     MainWindow = QtWidgets.QWidget()
     Ui = Ui_MainWindow()
     Ui.setupUi(MainWindow)
+
+    AddConfigToUi()
 
     newlineThread = NewlineThread()
     newlineThread.daemon = True
     newlineThread.start()
 
-    ### UI LINKING
+    # UI LINKING
 
     def handle_key_press(event):  # cycle previous commands when arrows are pressed
         global CommandListPos

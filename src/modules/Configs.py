@@ -22,7 +22,7 @@ class ConfigModel():
         self.Hint = hint
 
 
-DefaultConfigModel: dict[ConfigProperties, ConfigModel] = {
+ConfigsModels: dict[ConfigProperties, ConfigModel] = {
     ConfigProperties.GamePath:
         ConfigModel("portal 2 path", str, "the folder where p2 is installed"),
     ConfigProperties.CheckUpdateOnStart:
@@ -91,17 +91,22 @@ def GetValue(config: ConfigProperties, data=UserData) -> any:
 def GetDefaultValue(config: ConfigProperties) -> any:
     return DefaultData[config]
 
+def GetName(config: ConfigProperties) -> str:
+    return ConfigsModels[config].Label
 
-def GetConfigType(config: ConfigProperties) -> type:
-    return DefaultConfigModel[config].Type
+def GetHint(config: ConfigProperties) -> str:
+    return ConfigsModels[config].Hint
+
+def GetType(config: ConfigProperties) -> type:
+    return ConfigsModels[config].Type
 
 
 def SetValue(config: ConfigProperties, value: any, shouldSave: bool = True) -> None:
-    value = fn.ConvertValue(value, GetConfigType(config))
+    value = fn.ConvertValue(value, GetType(config))
     if value is None:
         # todo: global error handler and an error popup
         raise TypeError(
-            f"cannot convert {type(value)} to {GetConfigType(config)}")
+            f"cannot convert {type(value)} to {GetType(config)}")
     UserData[config] = value
     if shouldSave:
         __SaveConfigs()
