@@ -92,7 +92,7 @@ def GetValue(config: ConfigProperties, data=UserData) -> any:
 def GetDefaultValue(config: ConfigProperties) -> any:
     return DefaultData[config]
 
-def GetName(config: ConfigProperties) -> str:
+def GetLabelName(config: ConfigProperties) -> str:
     return ConfigsModels[config].Label
 
 def GetHint(config: ConfigProperties) -> str:

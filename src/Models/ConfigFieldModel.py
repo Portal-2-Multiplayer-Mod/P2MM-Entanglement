@@ -1,25 +1,31 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import modules.Configs as cfg
 
 
 class ConfigFieldModel(QtWidgets.QWidget):
 
-    def __init__(self, name: str, hint: str, value: any, customType: type) -> None:
-        super(ConfigFieldModel, self).__init__()
+    Config: cfg.ConfigProperties
+    Value: any
 
+    def __init__(self, config: cfg.ConfigProperties) -> None:
+        super(ConfigFieldModel, self).__init__()
         self.setObjectName("configFieldModel")
+
+        self.Config = config
 
         layout = QtWidgets.QVBoxLayout()
 
-        layout.addWidget(self.CreateNameLabel(name))
-        layout.addWidget(self.CreateHintLabel(hint))
-        layout.addWidget(self.CreateValueField(customType, value))
+        layout.addWidget(self.CreateNameLabel())
+        layout.addWidget(self.CreateHintLabel())
+        layout.addWidget(self.CreateValueField())
 
         spacerItem = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         layout.addItem(spacerItem)
 
         self.setLayout(layout)
 
-    def CreateNameLabel(self, name: str) -> QtWidgets.QLabel:
+    def CreateNameLabel(self) -> QtWidgets.QLabel:
+        name = cfg.GetLabelName(self.Config)
         Label = QtWidgets.QLabel(self)
 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
@@ -41,39 +47,56 @@ class ConfigFieldModel(QtWidgets.QWidget):
         Label.setText(name)
         return Label
 
-    def CreateHintLabel(self, hint: str) -> QtWidgets.QLabel:
-        Hint = QtWidgets.QLabel(self)
+    def CreateHintLabel(self) -> QtWidgets.QLabel:
+        hint = cfg.GetHint(self.Config)
+        HintLabel = QtWidgets.QLabel(self)
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(Hint.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(HintLabel.sizePolicy().hasHeightForWidth())
 
-        Hint.setSizePolicy(sizePolicy)
+        HintLabel.setSizePolicy(sizePolicy)
 
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setItalic(True)
 
-        Hint.setFont(font)
-        Hint.setObjectName("Hint")
-        Hint.setText(hint)
-        return Hint
+        HintLabel.setFont(font)
+        HintLabel.setObjectName("Hint")
+        HintLabel.setText(hint)
+        return HintLabel
 
-    def CreateValueField(self, customType: type, value: any) -> QtWidgets.QWidget:
-        Value: QtWidgets.QWidget
+    def CreateValueField(self) -> QtWidgets.QWidget:
+        customType: type = cfg.GetType(self.Config)
+        self.Value = cfg.GetValue(self.Config)
+
+        ValueField: QtWidgets.QWidget
 
         if customType is int:
-            Value = QtWidgets.QSpinBox(self)
-            Value.setValue(value)
-        elif customType is bool:
-            Value = QtWidgets.QCheckBox(self)
-            Value.text = ""
-            Value.setChecked(value)
-        else:
-            Value = QtWidgets.QLineEdit(self)
-            Value.setText(str(value))
+            ValueField = QtWidgets.QSpinBox(self)
+            ValueField.setValue(self.Value)
+            ValueField.valueChanged.connect(self.OnValueChanged)
 
-        Value.setMinimumSize(QtCore.QSize(0, 30))
-        Value.setObjectName("Value")
-        return Value
+        elif customType is bool:
+            ValueField = QtWidgets.QCheckBox(self)
+            ValueField.text = ""
+            ValueField.setChecked(self.Value)
+            ValueField.stateChanged.connect(self.OnValueChanged)
+
+        else:
+            ValueField = QtWidgets.QLineEdit(self)
+            ValueField.setText(str(self.Value))
+            ValueField.textChanged.connect(self.OnValueChanged)
+
+        ValueField.setMinimumSize(QtCore.QSize(0, 30))
+        ValueField.setObjectName("Value")
+
+        return ValueField
+
+    def OnValueChanged(self, event) -> None:
+        self.Value = event
+
+    def SaveValue(self) -> None:
+        cfg.SetValue(self.Config, self.Value)

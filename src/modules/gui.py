@@ -153,8 +153,9 @@ def AddConfigsToUi() -> None:
     from Models.ConfigFieldModel import ConfigFieldModel
 
     for config in cfg.ConfigProperties:
-        # Ui.verticalLayout_5.addWidget(ConfigFieldModel())
-        Ui.verticalLayout_5.addWidget(ConfigFieldModel(cfg.GetName(config),cfg.GetHint(config), cfg.GetValue(config), cfg.GetType(config)))
+        configField = ConfigFieldModel(config)
+        Ui.SaveButton.clicked.connect(configField.SaveValue)
+        Ui.verticalLayout_5.addWidget(configField)
 
 
 def Main() -> None:
