@@ -149,7 +149,7 @@ def SendRcon() -> None:
         log("user attempted to send command while game is closed")
 
 
-def AddConfigToUi() -> None:
+def AddConfigsToUi() -> None:
     from Models.ConfigFieldModel import ConfigFieldModel
 
     for config in cfg.ConfigProperties:
@@ -168,7 +168,7 @@ def Main() -> None:
     Ui = Ui_MainWindow()
     Ui.setupUi(MainWindow)
 
-    AddConfigToUi()
+    AddConfigsToUi()
 
     newlineThread = NewlineThread()
     newlineThread.daemon = True

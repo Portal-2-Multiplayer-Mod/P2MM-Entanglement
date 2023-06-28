@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 import modules.functions as fn
-#! do not touch the config model
+
 #! do not call any function / variable that starts with "__" outside of this file
 
 
@@ -25,9 +25,11 @@ class ConfigModel():
 ConfigsModels: dict[ConfigProperties, ConfigModel] = {
     ConfigProperties.GamePath:
         ConfigModel("portal 2 path", str, "the folder where p2 is installed"),
+
     ConfigProperties.CheckUpdateOnStart:
         ConfigModel("do you want to check for updates on start up?",
                     bool, "if enabled checks for update when the launcher opens"),
+
     ConfigProperties.Timeout:
         ConfigModel("timeout?",
                     int, "timeout :D"),
@@ -87,7 +89,6 @@ def __GetConfigsFilePath() -> str:
 def GetValue(config: ConfigProperties, data=UserData) -> any:
     return data[config]
 
-
 def GetDefaultValue(config: ConfigProperties) -> any:
     return DefaultData[config]
 
@@ -102,11 +103,15 @@ def GetType(config: ConfigProperties) -> type:
 
 
 def SetValue(config: ConfigProperties, value: any, shouldSave: bool = True) -> None:
-    value = fn.ConvertValue(value, GetType(config))
-    if value is None:
-        # todo: global error handler and an error popup
-        raise TypeError(
-            f"cannot convert {type(value)} to {GetType(config)}")
-    UserData[config] = value
+    try:
+        value = fn.ConvertValue(value, GetType(config))
+        if value is None:
+            # todo: global error handler and an error popup
+            raise TypeError(f"cannot convert {type(value)} to {GetType(config)}")
+
+        UserData[config] = value
+    except:
+        UserData[config] = GetDefaultValue(config)
+
     if shouldSave:
         __SaveConfigs()
